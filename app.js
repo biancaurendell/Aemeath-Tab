@@ -1,3 +1,27 @@
+const {
+  buildConfigSnapshot,
+  defaultAppearance,
+  defaultMetingApiUrl,
+  defaultShortcuts,
+  importConfigSnapshot,
+  migrateLegacyConfig,
+  mobileDefaultAppearance,
+  storageKeys,
+  syncConfigFromLegacyStorage
+} = window.PixelNewTabSettings;
+
+const {
+  assetKeys,
+  assetRef,
+  backgroundIndexedRef,
+  deleteAsset,
+  isAssetRef,
+  readAssetByRef,
+  readAsset,
+  resolveAssetKey,
+  writeAsset
+} = window.PixelNewTabStorage;
+
 const engines = {
   google: {
     label: "GOOGLE",
@@ -25,62 +49,7 @@ const engines = {
   }
 };
 
-const digitMap = {
-  "0": ["111", "101", "101", "101", "101", "101", "111"],
-  "1": ["010", "110", "010", "010", "010", "010", "111"],
-  "2": ["111", "001", "001", "111", "100", "100", "111"],
-  "3": ["111", "001", "001", "111", "001", "001", "111"],
-  "4": ["101", "101", "101", "111", "001", "001", "001"],
-  "5": ["111", "100", "100", "111", "001", "001", "111"],
-  "6": ["111", "100", "100", "111", "101", "101", "111"],
-  "7": ["111", "001", "001", "010", "010", "010", "010"],
-  "8": ["111", "101", "101", "111", "101", "101", "111"],
-  "9": ["111", "101", "101", "111", "001", "001", "111"]
-};
-
 const shortcutColors = ["#5896f2", "#f7c84e", "#f25c57", "#66513f", "#93bd69", "#315caa", "#d5b76c", "#3e2d39", "#cc4049", "#3769bb", "#9dd3a4", "#e6e8ef"];
-
-const storageKeys = {
-  engine: "pixelNewTab.engine",
-  showClock: "pixelNewTab.showClock",
-  showAddShortcut: "pixelNewTab.showAddShortcut",
-  showClouds: "pixelNewTab.showClouds",
-  showBottomSpectrum: "pixelNewTab.showBottomSpectrum",
-  openSearchInNewTab: "pixelNewTab.openSearchInNewTab",
-  background: "pixelNewTab.background",
-  shortcuts: "pixelNewTab.shortcuts.v2",
-  appearance: "pixelNewTab.appearance",
-  musicUrl: "pixelNewTab.musicUrl",
-  metingApiUrl: "pixelNewTab.metingApiUrl"
-};
-
-const defaultAppearance = {
-  iconOpacity: 100,
-  iconScale: 94,
-  timeOpacity: 66,
-  timeScale: 85,
-  timeX: -26,
-  timeY: -38,
-  searchOpacity: 61,
-  searchScale: 100,
-  dustOverlayStrength: 31,
-  searchX: -21,
-  searchY: -34
-};
-
-const mobileDefaultAppearance = {
-  ...defaultAppearance,
-  timeOpacity: 78,
-  timeScale: 78,
-  timeX: 0,
-  timeY: -18,
-  searchOpacity: 76,
-  searchScale: 92,
-  searchX: 0,
-  searchY: 2
-};
-
-const defaultShortcuts = [];
 
 const timeText = document.querySelector("#timeText");
 const customBackground = document.querySelector("#customBackground");
@@ -88,6 +57,7 @@ const dateText = document.querySelector("#dateText");
 const clockPanel = document.querySelector("#clockPanel");
 const searchForm = document.querySelector("#searchForm");
 const searchInput = document.querySelector("#searchInput");
+const searchSuggestionsPanel = document.querySelector("#searchSuggestions");
 const enginePicker = document.querySelector("#enginePicker");
 const engineButton = document.querySelector("#engineButton");
 const engineMenu = document.querySelector("#engineMenu");
@@ -95,11 +65,25 @@ const engineName = document.querySelector("#engineName");
 const engineDot = document.querySelector("#engineDot");
 const settingsButton = document.querySelector("#settingsButton");
 const settingsDialog = document.querySelector("#settingsDialog");
+const settingsTabs = Array.from(document.querySelectorAll(".settings-tab"));
+const settingsPanels = Array.from(document.querySelectorAll(".settings-panel"));
 const clockToggle = document.querySelector("#clockToggle");
 const addShortcutToggle = document.querySelector("#addShortcutToggle");
 const cloudToggle = document.querySelector("#cloudToggle");
 const bottomSpectrumToggle = document.querySelector("#bottomSpectrumToggle");
 const searchNewTabToggle = document.querySelector("#searchNewTabToggle");
+const searchSuggestToggle = document.querySelector("#searchSuggestToggle");
+const searchHistoryToggle = document.querySelector("#searchHistoryToggle");
+const clearSearchHistoryButton = document.querySelector("#clearSearchHistoryButton");
+const customEngineName = document.querySelector("#customEngineName");
+const customEngineUrl = document.querySelector("#customEngineUrl");
+const addCustomEngineButton = document.querySelector("#addCustomEngineButton");
+const customEngineList = document.querySelector("#customEngineList");
+const perfLowPowerToggle = document.querySelector("#perfLowPowerToggle");
+const perfMeteorsToggle = document.querySelector("#perfMeteorsToggle");
+const perfClickEffectsToggle = document.querySelector("#perfClickEffectsToggle");
+const perfPetMotionToggle = document.querySelector("#perfPetMotionToggle");
+const perfLyricsToggle = document.querySelector("#perfLyricsToggle");
 const backgroundFile = document.querySelector("#backgroundFile");
 const backgroundUrl = document.querySelector("#backgroundUrl");
 const wallpaperGrid = document.querySelector("#wallpaperGrid");
@@ -109,6 +93,7 @@ const exportConfigButton = document.querySelector("#exportConfigButton");
 const importConfigButton = document.querySelector("#importConfigButton");
 const importConfigFile = document.querySelector("#importConfigFile");
 const shortcutRow = document.querySelector("#shortcutRow");
+const shortcutPager = document.querySelector("#shortcutPager");
 const addShortcutButton = document.querySelector("#addShortcutButton");
 const shortcutDialog = document.querySelector("#shortcutDialog");
 const shortcutDialogTitle = document.querySelector("#shortcutDialogTitle");
@@ -128,6 +113,9 @@ const saveShortcutButton = document.querySelector("#saveShortcutButton");
 const closeShortcutDialogButton = document.querySelector("#closeShortcutDialogButton");
 const cancelShortcutButton = document.querySelector("#cancelShortcutButton");
 const shortcutMenu = document.querySelector("#shortcutMenu");
+const shortcutPagingToggle = document.querySelector("#shortcutPagingToggle");
+const shortcutColumnsInput = document.querySelector("#shortcutColumnsInput");
+const shortcutRowsInput = document.querySelector("#shortcutRowsInput");
 const petSprite = document.querySelector("#petSprite");
 const petImage = document.querySelector("#petImage");
 const pixelGround = document.querySelector(".pixel-ground");
@@ -179,8 +167,16 @@ let selectedEngine = "google";
 let selectedShortcutColor = shortcutColors[0];
 let uploadedIcon = "";
 let editingShortcutId = "";
+let editingShortcutIconAssetRef = "";
 let activeShortcutId = "";
 let shortcuts = [];
+let shortcutPage = 0;
+let draggedShortcutId = "";
+let shortcutLayout = {
+  rows: 1,
+  columns: 5,
+  paging: true
+};
 let meteors = [];
 let stars = [];
 let nextMeteorAt = 0;
@@ -210,11 +206,24 @@ let lastFloatingLyricAt = 0;
 let lastProgressPaintAt = 0;
 let lastClickEffectAt = 0;
 let activeBackgroundValue = "";
-const defaultMetingApiUrl = "https://api.injahow.cn/meting/?server=netease&type=playlist&id=17929070065";
-const backgroundDbName = "pixelNewTab.assets";
-const backgroundStoreName = "assets";
-const backgroundAssetKey = "background.original";
-const backgroundIndexedRef = "indexeddb:background.original";
+let customSearchEngines = [];
+let searchHistory = [];
+let searchSuggestions = [];
+let activeSuggestionIndex = -1;
+let searchSuggestTimer = 0;
+let searchSuggestRequestId = 0;
+let searchSettings = {
+  suggestions: true,
+  historyEnabled: true
+};
+let performanceSettings = {
+  lowPower: false,
+  meteors: true,
+  clickEffects: true,
+  petMotion: true,
+  lyrics: true
+};
+const backgroundAssetKey = assetKeys.backgroundOriginal;
 const wallpaperDirectory = "./assets/wallpapers/";
 const wallpaperManifest = `${wallpaperDirectory}wallpapers.json`;
 const wallpaperFilePattern = /\.(?:png|jpe?g|webp|gif|avif)$/i;
@@ -234,6 +243,94 @@ const builtInWallpaperSeeds = [
 ];
 let builtInWallpapers = [...builtInWallpaperSeeds];
 
+function isDataUrl(value) {
+  return typeof value === "string" && value.startsWith("data:");
+}
+
+function getShortcutIconAssetKey(shortcutId) {
+  return `${assetKeys.shortcutIconPrefix}${shortcutId}`;
+}
+
+function getShortcutIconAssetRef(shortcutId) {
+  return assetRef(getShortcutIconAssetKey(shortcutId));
+}
+
+function getMusicCoverAssetKey(track) {
+  const trackId = getTrackId(track);
+  return trackId ? `${assetKeys.musicCoverPrefix}${trackId}` : "";
+}
+
+function getMusicCoverAssetRef(track) {
+  const key = getMusicCoverAssetKey(track);
+  return key ? assetRef(key) : "";
+}
+
+async function resolveShortcutIconSource(image) {
+  if (!image) return "";
+  if (isAssetRef(image)) return readAssetByRef(image).catch(() => "");
+  return image;
+}
+
+async function persistShortcutIconAsset(shortcutId, image, previousImage = "") {
+  if (!image) return "";
+  if (isAssetRef(image)) return image;
+  if (!isDataUrl(image)) return image;
+
+  if (isAssetRef(previousImage)) {
+    const previousSource = await readAssetByRef(previousImage).catch(() => "");
+    if (previousSource && previousSource === image) {
+      return previousImage;
+    }
+  }
+
+  const assetKey = getShortcutIconAssetKey(shortcutId);
+  await writeAsset(assetKey, image);
+  return getShortcutIconAssetRef(shortcutId);
+}
+
+async function cleanupShortcutIconAsset(image) {
+  if (!isAssetRef(image)) return;
+  await deleteAsset(resolveAssetKey(image));
+}
+
+async function resolveMusicCoverSource(track) {
+  const cover = (track?.cover || "").trim();
+  if (!cover) return "";
+  if (isAssetRef(cover)) return readAssetByRef(cover).catch(() => "");
+
+  const cachedCover = await readAssetByRef(getMusicCoverAssetRef(track)).catch(() => "");
+  return cachedCover || cover;
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => resolve(typeof reader.result === "string" ? reader.result : ""));
+    reader.addEventListener("error", () => resolve(""));
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function cacheMusicCoverAsset(track) {
+  const cover = (track?.cover || "").trim();
+  const assetRefValue = getMusicCoverAssetRef(track);
+  if (!assetRefValue || !cover || isAssetRef(cover) || isDataUrl(cover)) return;
+
+  try {
+    const response = await fetch(cover, { cache: "force-cache", mode: "cors" });
+    if (!response.ok) return;
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.startsWith("image/")) return;
+    const dataUrl = await blobToDataUrl(await response.blob());
+    if (dataUrl) {
+      await writeAsset(resolveAssetKey(assetRefValue), dataUrl);
+      if (track && typeof track === "object") track.cover = assetRefValue;
+    }
+  } catch {
+    // 忽略跨域或网络错误，保留远程封面直链兜底。
+  }
+}
+
 const petStates = {
   move: "./assets/pet/move.gif",
   seal: "./assets/pet/seal.gif",
@@ -250,7 +347,231 @@ function getDefaultBackground() {
   return isMobileViewport() ? mobileDefaultBackground : defaultBackground;
 }
 
+function readJsonStorage(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveJsonStorage(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function readBoolStorage(key, fallback) {
+  const value = localStorage.getItem(key);
+  return value === null ? fallback : value === "true";
+}
+
+function createCustomEngineId() {
+  return `custom-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function normalizeSearchTemplate(value) {
+  const template = value.trim();
+  if (!template || !/^https?:\/\//i.test(template) || !template.includes("%s")) return "";
+  return template;
+}
+
+function loadCustomSearchEngines() {
+  customSearchEngines = readJsonStorage(storageKeys.customSearchEngines, [])
+    .filter((engine) => engine && typeof engine === "object")
+    .map((engine) => ({
+      id: String(engine.id || createCustomEngineId()),
+      label: String(engine.label || engine.name || "").trim().slice(0, 18),
+      url: normalizeSearchTemplate(String(engine.url || ""))
+    }))
+    .filter((engine) => engine.label && engine.url);
+
+  for (const key of Object.keys(engines)) {
+    if (key.startsWith("custom-")) delete engines[key];
+  }
+
+  customSearchEngines.forEach((engine, index) => {
+    engines[engine.id] = {
+      label: engine.label.toUpperCase(),
+      marker: engine.label.slice(0, 1).toUpperCase() || "搜",
+      color: `linear-gradient(135deg, ${shortcutColors[index % shortcutColors.length]}, #f0dcff)`,
+      url: engine.url,
+      custom: true
+    };
+  });
+}
+
+function saveCustomSearchEngines() {
+  saveJsonStorage(storageKeys.customSearchEngines, customSearchEngines);
+  syncConfigFromLegacyStorage();
+}
+
+function readSearchSettings() {
+  return {
+    suggestions: readBoolStorage(storageKeys.searchSuggestions, true),
+    historyEnabled: readBoolStorage(storageKeys.searchHistoryEnabled, true)
+  };
+}
+
+function saveSearchSettings() {
+  localStorage.setItem(storageKeys.searchSuggestions, String(searchSettings.suggestions));
+  localStorage.setItem(storageKeys.searchHistoryEnabled, String(searchSettings.historyEnabled));
+  syncConfigFromLegacyStorage();
+}
+
+function readSearchHistory() {
+  return readJsonStorage(storageKeys.searchHistory, [])
+    .filter((item) => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 30);
+}
+
+function saveSearchHistory() {
+  saveJsonStorage(storageKeys.searchHistory, searchHistory.slice(0, 30));
+}
+
+function rememberSearchQuery(query) {
+  const value = query.trim();
+  if (!value || !searchSettings.historyEnabled) return;
+  searchHistory = [value, ...searchHistory.filter((item) => item !== value)].slice(0, 30);
+  saveSearchHistory();
+}
+
+function clampNumber(value, min, max, fallback) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(max, Math.max(min, Math.round(number)));
+}
+
+function readShortcutLayout() {
+  return {
+    rows: clampNumber(localStorage.getItem(storageKeys.shortcutRows), 1, 3, 1),
+    columns: clampNumber(localStorage.getItem(storageKeys.shortcutColumns), 3, 8, 5),
+    paging: readBoolStorage(storageKeys.shortcutPaging, true)
+  };
+}
+
+function saveShortcutLayout() {
+  localStorage.setItem(storageKeys.shortcutRows, String(shortcutLayout.rows));
+  localStorage.setItem(storageKeys.shortcutColumns, String(shortcutLayout.columns));
+  localStorage.setItem(storageKeys.shortcutPaging, String(shortcutLayout.paging));
+  syncConfigFromLegacyStorage();
+}
+
+function syncShortcutLayoutControls() {
+  shortcutRowsInput.value = String(shortcutLayout.rows);
+  shortcutColumnsInput.value = String(shortcutLayout.columns);
+  shortcutPagingToggle.checked = shortcutLayout.paging;
+  updateRangeVisual(shortcutRowsInput);
+  updateRangeVisual(shortcutColumnsInput);
+}
+
+function getShortcutSlotsPerPage() {
+  return Math.max(1, shortcutLayout.rows * getEffectiveShortcutColumns());
+}
+
+function getEffectiveShortcutColumns() {
+  return isMobileViewport() ? Math.min(shortcutLayout.columns, 4) : shortcutLayout.columns;
+}
+
+function getShortcutPageCount() {
+  if (!shortcutLayout.paging) return 1;
+  return Math.max(1, Math.ceil((shortcuts.length + 1) / getShortcutSlotsPerPage()));
+}
+
+function clampShortcutPage() {
+  shortcutPage = Math.min(shortcutPage, getShortcutPageCount() - 1);
+  shortcutPage = Math.max(0, shortcutPage);
+}
+
+function readPerformanceSettings() {
+  const readBool = (key, fallback) => {
+    const value = localStorage.getItem(key);
+    return value === null ? fallback : value === "true";
+  };
+  return {
+    lowPower: readBool(storageKeys.perfLowPower, false),
+    meteors: readBool(storageKeys.perfMeteors, true),
+    clickEffects: readBool(storageKeys.perfClickEffects, true),
+    petMotion: readBool(storageKeys.perfPetMotion, true),
+    lyrics: readBool(storageKeys.perfLyrics, true)
+  };
+}
+
+function isLowPowerMode() {
+  return performanceSettings.lowPower;
+}
+
+function areMeteorsEnabled() {
+  return performanceSettings.meteors && !isLowPowerMode();
+}
+
+function areClickEffectsEnabled() {
+  return performanceSettings.clickEffects && !isLowPowerMode();
+}
+
+function isPetMotionEnabled() {
+  return performanceSettings.petMotion && !isLowPowerMode();
+}
+
+function areLyricsEnabled() {
+  return performanceSettings.lyrics && !isLowPowerMode();
+}
+
+function savePerformanceSettings() {
+  localStorage.setItem(storageKeys.perfLowPower, String(performanceSettings.lowPower));
+  localStorage.setItem(storageKeys.perfMeteors, String(performanceSettings.meteors));
+  localStorage.setItem(storageKeys.perfClickEffects, String(performanceSettings.clickEffects));
+  localStorage.setItem(storageKeys.perfPetMotion, String(performanceSettings.petMotion));
+  localStorage.setItem(storageKeys.perfLyrics, String(performanceSettings.lyrics));
+  syncConfigFromLegacyStorage();
+}
+
+function syncPerformanceToggles() {
+  perfLowPowerToggle.checked = performanceSettings.lowPower;
+  perfMeteorsToggle.checked = performanceSettings.meteors;
+  perfClickEffectsToggle.checked = performanceSettings.clickEffects;
+  perfPetMotionToggle.checked = performanceSettings.petMotion;
+  perfLyricsToggle.checked = performanceSettings.lyrics;
+
+  for (const toggle of [perfMeteorsToggle, perfClickEffectsToggle, perfPetMotionToggle, perfLyricsToggle]) {
+    toggle.disabled = performanceSettings.lowPower;
+    toggle.closest(".setting-line")?.classList.toggle("is-disabled", performanceSettings.lowPower);
+  }
+}
+
+function applyPerformanceSettings() {
+  document.documentElement.classList.toggle("perf-low-power", isLowPowerMode());
+  document.documentElement.classList.toggle("perf-no-meteors", !areMeteorsEnabled());
+  document.documentElement.classList.toggle("perf-no-click-effects", !areClickEffectsEnabled());
+  document.documentElement.classList.toggle("perf-no-pet-motion", !isPetMotionEnabled());
+  document.documentElement.classList.toggle("perf-no-lyrics", !areLyricsEnabled());
+
+  if (areMeteorsEnabled() && !isMusicActivelyPlaying()) {
+    startMeteorAnimation();
+  } else {
+    stopMeteorAnimation();
+  }
+
+  if (isPetMotionEnabled()) {
+    startPetIdle();
+  } else {
+    clearPetTimers();
+    setPetImage("seal");
+  }
+
+  if (!areLyricsEnabled()) clearDynamicLyrics();
+  syncPerformanceToggles();
+}
+
+function updatePerformanceSetting(key, value) {
+  performanceSettings = { ...performanceSettings, [key]: value };
+  savePerformanceSettings();
+  applyPerformanceSettings();
+}
+
 async function loadSettings() {
+  migrateLegacyConfig();
   const wallpaperLoad = loadBuiltInWallpapers();
   const savedEngine = localStorage.getItem(storageKeys.engine);
   const savedClock = localStorage.getItem(storageKeys.showClock);
@@ -264,6 +585,16 @@ async function loadSettings() {
   const savedMusicUrl = localStorage.getItem(storageKeys.musicUrl);
   const savedMetingApiUrl = localStorage.getItem(storageKeys.metingApiUrl) || defaultMetingApiUrl;
 
+  loadCustomSearchEngines();
+  searchSettings = readSearchSettings();
+  searchHistory = readSearchHistory();
+  searchSuggestToggle.checked = searchSettings.suggestions;
+  searchHistoryToggle.checked = searchSettings.historyEnabled;
+  renderCustomSearchEngines();
+  shortcutLayout = readShortcutLayout();
+  syncShortcutLayoutControls();
+  performanceSettings = readPerformanceSettings();
+  syncPerformanceToggles();
   selectedEngine = savedEngine && engines[savedEngine] ? savedEngine : "google";
   shortcuts = savedShortcuts ? JSON.parse(savedShortcuts) : defaultShortcuts;
 
@@ -328,6 +659,8 @@ async function loadSettings() {
   buildMusicNotes(bottomNotes, 28, 8, 104);
   updateMusicProgress();
   loadMetingPlaylist(savedMetingApiUrl, { silent: true });
+  applyPerformanceSettings();
+  syncConfigFromLegacyStorage();
 }
 
 function applyAppearance(settings) {
@@ -370,6 +703,7 @@ function saveAppearance() {
   const settings = readAppearanceInputs();
   applyAppearance(settings);
   localStorage.setItem(storageKeys.appearance, JSON.stringify(settings));
+  syncConfigFromLegacyStorage();
 }
 
 function setBottomSpectrumVisibility(isVisible) {
@@ -422,6 +756,7 @@ function randomBetween(min, max) {
 }
 
 function spawnClickEffect(event) {
+  if (!areClickEffectsEnabled()) return;
   if (event.button !== 0 && event.button !== undefined) return;
   if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return;
   if (event.target.closest("input, button, select, textarea, label, dialog, .music-player, .shortcut-menu")) return;
@@ -554,9 +889,9 @@ function parseLrc(text) {
   return String(text || "")
     .split(/\r?\n/)
     .flatMap((line) => {
-      const content = line.replace(/\[[^\]]+\]/g, "").trim();
+      const content = line.replace(/\[[^]]+]/g, "").trim();
       if (!content || metadataPrefixes.some((prefix) => content.startsWith(prefix))) return [];
-      const times = [...line.matchAll(/\[(\d{1,2}):(\d{2}(?:\.\d{1,3})?)\]/g)];
+      const times = [...line.matchAll(/\[(\d{1,2}):(\d{2}(?:\.\d{1,3})?)]/g)];
       return times.map((match) => ({ time: parseLyricTime(match[1], match[2]), text: content }));
     })
     .filter((line) => Number.isFinite(line.time) && line.text)
@@ -612,6 +947,7 @@ function spawnFloatingLyric(text) {
 }
 
 function updateDynamicLyric(currentTime) {
+  if (!areLyricsEnabled()) return;
   if (musicAudio.paused || !activeLyrics.length || !Number.isFinite(currentTime)) return;
 
   let nextIndex = Math.max(0, activeLyricIndex);
@@ -649,6 +985,7 @@ function applyMusicSource(value) {
   updateMusicProgress();
   renderPlaylist();
   localStorage.setItem(storageKeys.musicUrl, url);
+  syncConfigFromLegacyStorage();
   trackSubtitle.textContent = "Direct Audio";
   try {
     const parsed = new URL(url);
@@ -673,6 +1010,7 @@ function applyLocalMusicFile(file) {
   renderPlaylist();
   updateMusicProgress();
   localStorage.removeItem(storageKeys.musicUrl);
+  syncConfigFromLegacyStorage();
   musicUrl.value = "";
 }
 
@@ -736,14 +1074,25 @@ async function loadMetingPlaylist(url, { silent = false } = {}) {
 
   metingApiUrl.value = apiUrl;
   localStorage.setItem(storageKeys.metingApiUrl, apiUrl);
+  syncConfigFromLegacyStorage();
   trackSubtitle.textContent = "Loading playlist...";
 
   try {
     const response = await fetch(apiUrl, { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!response.ok) {
+      console.warn(`Meting playlist load failed. HTTP ${response.status}`);
+      trackSubtitle.textContent = "Playlist unavailable";
+      if (!silent) alert("歌单加载失败，请确认 Meting API 可以跨域访问，并且返回了歌曲 url。");
+      return;
+    }
     const payload = await response.json();
     const tracks = normalizePlaylistTracks(payload);
-    if (!tracks.length) throw new Error("No playable track url in playlist.");
+    if (!tracks.length) {
+      console.warn("Meting playlist load failed. No playable track url in playlist.");
+      trackSubtitle.textContent = "Playlist unavailable";
+      if (!silent) alert("歌单加载失败，请确认 Meting API 可以跨域访问，并且返回了歌曲 url。");
+      return;
+    }
 
     playlistTracks = tracks;
     activeTrackIndex = 0;
@@ -765,13 +1114,15 @@ async function selectPlaylistTrack(index, shouldPlay = false) {
   musicAudio.currentTime = 0;
   trackTitle.textContent = track.title;
   trackSubtitle.textContent = track.artist || "Netease Playlist";
-  setTrackCover(track.cover);
+  setTrackCover(await resolveMusicCoverSource(track));
   clearDynamicLyrics();
   const requestId = ++lyricRequestId;
   localStorage.removeItem(storageKeys.musicUrl);
+  syncConfigFromLegacyStorage();
   musicUrl.value = "";
   renderPlaylist();
   updateMusicProgress();
+  cacheMusicCoverAsset(track).catch((error) => console.warn("Music cover cache failed.", error));
 
   loadTrackLyrics(track, requestId)
     .then((lines) => {
@@ -855,23 +1206,6 @@ function isMusicActivelyPlaying() {
   return !musicAudio.paused && !musicAudio.ended;
 }
 
-async function buildConfigSnapshot() {
-  const settings = {};
-  for (const key of Object.values(storageKeys)) {
-    settings[key] = localStorage.getItem(key);
-  }
-
-  return {
-    app: "pixel-new-tab",
-    version: 1,
-    exportedAt: new Date().toISOString(),
-    settings,
-    assets: {
-      backgroundOriginal: await readAsset(backgroundAssetKey).catch(() => "")
-    }
-  };
-}
-
 async function exportConfig() {
   const snapshot = await buildConfigSnapshot();
   const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: "application/json" });
@@ -889,23 +1223,7 @@ async function importConfig(file) {
   if (!file) return;
   const text = await file.text();
   const snapshot = JSON.parse(text);
-  if (snapshot.app !== "pixel-new-tab" || !snapshot.settings) {
-    throw new Error("不是有效的 Pixel New Tab 配置文件。");
-  }
-
-  for (const [key, value] of Object.entries(snapshot.settings)) {
-    if (value === null || value === undefined) {
-      localStorage.removeItem(key);
-    } else {
-      localStorage.setItem(key, value);
-    }
-  }
-
-  if (snapshot.assets?.backgroundOriginal) {
-    await writeAsset(backgroundAssetKey, snapshot.assets.backgroundOriginal);
-    localStorage.setItem(storageKeys.background, backgroundIndexedRef);
-  }
-
+  await importConfigSnapshot(snapshot);
   window.location.reload();
 }
 
@@ -1064,6 +1382,7 @@ function updateWallpaperSelection() {
 function applyBuiltInWallpaper(src) {
   setBackground(src);
   localStorage.setItem(storageKeys.background, src);
+  syncConfigFromLegacyStorage();
   deleteAsset(backgroundAssetKey).catch((error) => console.warn("背景资源删除失败。", error));
   backgroundUrl.value = "";
   backgroundFile.value = "";
@@ -1076,63 +1395,10 @@ function setBackground(value) {
   updateWallpaperSelection();
 }
 
-function openAssetDb() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(backgroundDbName, 1);
-    request.addEventListener("upgradeneeded", () => {
-      request.result.createObjectStore(backgroundStoreName);
-    });
-    request.addEventListener("success", () => resolve(request.result));
-    request.addEventListener("error", () => reject(request.error));
-  });
-}
-
-async function writeAsset(key, value) {
-  const db = await openAssetDb();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(backgroundStoreName, "readwrite");
-    transaction.objectStore(backgroundStoreName).put(value, key);
-    transaction.addEventListener("complete", () => {
-      db.close();
-      resolve();
-    });
-    transaction.addEventListener("error", () => {
-      db.close();
-      reject(transaction.error);
-    });
-  });
-}
-
-async function readAsset(key) {
-  const db = await openAssetDb();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(backgroundStoreName, "readonly");
-    const request = transaction.objectStore(backgroundStoreName).get(key);
-    request.addEventListener("success", () => resolve(request.result || ""));
-    request.addEventListener("error", () => reject(request.error));
-    transaction.addEventListener("complete", () => db.close());
-  });
-}
-
-async function deleteAsset(key) {
-  const db = await openAssetDb();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(backgroundStoreName, "readwrite");
-    transaction.objectStore(backgroundStoreName).delete(key);
-    transaction.addEventListener("complete", () => {
-      db.close();
-      resolve();
-    });
-    transaction.addEventListener("error", () => {
-      db.close();
-      reject(transaction.error);
-    });
-  });
-}
-
 function saveBackground(value) {
   try {
     localStorage.setItem(storageKeys.background, value);
+    syncConfigFromLegacyStorage();
     return true;
   } catch (error) {
     console.warn("背景图片已应用，但图片过大，无法保存到本地。", error);
@@ -1167,6 +1433,7 @@ function compressBackgroundImage(dataUrl, fileType) {
 
 function resetBackground() {
   localStorage.removeItem(storageKeys.background);
+  syncConfigFromLegacyStorage();
   deleteAsset(backgroundAssetKey).catch((error) => console.warn("背景资源删除失败。", error));
   setBackground(getDefaultBackground());
   backgroundUrl.value = "";
@@ -1197,6 +1464,7 @@ function updateClock() {
 }
 
 function buildEngineMenu() {
+  loadCustomSearchEngines();
   engineMenu.innerHTML = "";
   for (const [key, engine] of Object.entries(engines)) {
     const option = document.createElement("button");
@@ -1208,6 +1476,7 @@ function buildEngineMenu() {
     option.addEventListener("click", () => {
       selectedEngine = key;
       localStorage.setItem(storageKeys.engine, selectedEngine);
+      syncConfigFromLegacyStorage();
       enginePicker.classList.remove("is-open");
       engineButton.setAttribute("aria-expanded", "false");
       renderEngine();
@@ -1218,6 +1487,7 @@ function buildEngineMenu() {
 }
 
 function renderEngine() {
+  if (!engines[selectedEngine]) selectedEngine = "google";
   const engine = engines[selectedEngine];
   engineDot.textContent = engine.marker;
   engineDot.style.background = engine.color;
@@ -1230,6 +1500,7 @@ function renderEngine() {
 
 function saveShortcuts() {
   localStorage.setItem(storageKeys.shortcuts, JSON.stringify(shortcuts));
+  syncConfigFromLegacyStorage();
 }
 
 function renderShortcuts() {
@@ -1237,13 +1508,46 @@ function renderShortcuts() {
     item.remove();
   }
 
-  for (const shortcut of shortcuts) {
+  clampShortcutPage();
+  const slots = getShortcutSlotsPerPage();
+  const totalPages = getShortcutPageCount();
+  const pageStart = shortcutLayout.paging ? shortcutPage * slots : 0;
+  const pageLimit = shortcutLayout.paging && shortcutPage === totalPages - 1 ? slots - 1 : slots;
+  const pageShortcuts = shortcutLayout.paging ? shortcuts.slice(pageStart, pageStart + pageLimit) : shortcuts;
+  document.documentElement.style.setProperty("--shortcut-columns", String(getEffectiveShortcutColumns()));
+  shortcutRow.style.setProperty("--shortcut-columns", String(getEffectiveShortcutColumns()));
+
+  for (const shortcut of pageShortcuts) {
     const link = document.createElement("a");
     link.className = "shortcut shortcut-link";
     link.href = shortcut.url;
     link.rel = "noreferrer";
+    link.draggable = true;
     link.dataset.shortcutId = shortcut.id;
     link.dataset.hotkey = shortcut.hotkey || "";
+    link.addEventListener("dragstart", (event) => {
+      draggedShortcutId = shortcut.id;
+      link.classList.add("is-dragging");
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", shortcut.id);
+    });
+    link.addEventListener("dragend", () => {
+      draggedShortcutId = "";
+      link.classList.remove("is-dragging");
+      clearShortcutDropTargets();
+    });
+    link.addEventListener("dragover", (event) => {
+      if (!draggedShortcutId || draggedShortcutId === shortcut.id) return;
+      event.preventDefault();
+      link.classList.add("is-drop-target");
+    });
+    link.addEventListener("dragleave", () => {
+      link.classList.remove("is-drop-target");
+    });
+    link.addEventListener("drop", (event) => {
+      event.preventDefault();
+      reorderShortcut(draggedShortcutId, shortcut.id);
+    });
     link.addEventListener("contextmenu", (event) => {
       event.preventDefault();
       openShortcutMenu(event, shortcut.id);
@@ -1255,8 +1559,16 @@ function renderShortcuts() {
 
     if (shortcut.image) {
       const image = document.createElement("img");
-      image.src = shortcut.image;
       image.alt = "";
+      if (isAssetRef(shortcut.image)) {
+        resolveShortcutIconSource(shortcut.image)
+          .then((src) => {
+            if (src) image.src = src;
+          })
+          .catch(() => {});
+      } else {
+        image.src = shortcut.image;
+      }
       icon.append(image);
     } else {
       icon.textContent = (shortcut.iconText || shortcut.name.slice(0, 1) || "A").slice(0, 2).toUpperCase();
@@ -1266,6 +1578,49 @@ function renderShortcuts() {
     label.textContent = shortcut.name;
     link.append(icon, label);
     shortcutRow.insertBefore(link, addShortcutButton);
+  }
+
+  const shouldShowAdd = !shortcutLayout.paging || shortcutPage === totalPages - 1;
+  addShortcutButton.hidden = !shouldShowAdd;
+  renderShortcutPager();
+  shortcutPager.classList.toggle("is-visible", !shortcutRow.classList.contains("is-hidden") && shortcutLayout.paging && totalPages > 1);
+}
+
+function clearShortcutDropTargets() {
+  for (const item of shortcutRow.querySelectorAll(".is-drop-target")) {
+    item.classList.remove("is-drop-target");
+  }
+}
+
+function reorderShortcut(sourceId, targetId) {
+  if (!sourceId || !targetId || sourceId === targetId) return;
+  const fromIndex = shortcuts.findIndex((shortcut) => shortcut.id === sourceId);
+  const toIndex = shortcuts.findIndex((shortcut) => shortcut.id === targetId);
+  if (fromIndex < 0 || toIndex < 0) return;
+  const [moved] = shortcuts.splice(fromIndex, 1);
+  shortcuts.splice(toIndex, 0, moved);
+  draggedShortcutId = "";
+  saveShortcuts();
+  renderShortcuts();
+}
+
+function renderShortcutPager() {
+  shortcutPager.innerHTML = "";
+  const totalPages = getShortcutPageCount();
+  shortcutPager.classList.toggle("is-visible", shortcutLayout.paging && totalPages > 1);
+  if (!shortcutLayout.paging || totalPages <= 1) return;
+
+  for (let index = 0; index < totalPages; index += 1) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "shortcut-page-button";
+    button.classList.toggle("is-active", index === shortcutPage);
+    button.setAttribute("aria-label", `第 ${index + 1} 页`);
+    button.addEventListener("click", () => {
+      shortcutPage = index;
+      renderShortcuts();
+    });
+    shortcutPager.append(button);
   }
 }
 
@@ -1311,6 +1666,7 @@ function buildColorSwatches() {
 function resetShortcutForm() {
   shortcutForm.reset();
   editingShortcutId = "";
+  editingShortcutIconAssetRef = "";
   shortcutDialogTitle.textContent = "添加网址快捷方式";
   saveShortcutButton.textContent = "保存";
   saveMoreShortcutButton.hidden = false;
@@ -1324,7 +1680,7 @@ function resetShortcutForm() {
   updateShortcutPreview();
 }
 
-function openShortcutEditor(shortcut) {
+async function openShortcutEditor(shortcut) {
   resetShortcutForm();
   editingShortcutId = shortcut.id;
   shortcutDialogTitle.textContent = "修改网址快捷方式";
@@ -1335,7 +1691,8 @@ function openShortcutEditor(shortcut) {
   shortcutIconText.value = shortcut.iconText || shortcut.name.slice(0, 1).toUpperCase();
   shortcutKey.value = shortcut.hotkey || "";
   selectedShortcutColor = shortcut.color || shortcutColors[0];
-  uploadedIcon = shortcut.image || "";
+  editingShortcutIconAssetRef = isAssetRef(shortcut.image) ? shortcut.image : "";
+  uploadedIcon = (await resolveShortcutIconSource(shortcut.image)) || shortcut.image || "";
 
   for (const item of colorSwatches.children) {
     item.classList.toggle("active", item.dataset.color === selectedShortcutColor);
@@ -1352,8 +1709,7 @@ function openShortcutEditor(shortcut) {
 }
 
 function updateShortcutPreview() {
-  const text = (shortcutIconText.value || "A").slice(0, 2).toUpperCase();
-  textIconPreview.textContent = text;
+  textIconPreview.textContent = (shortcutIconText.value || "A").slice(0, 2).toUpperCase();
   textIconPreview.style.setProperty("--shortcut-color", selectedShortcutColor);
 }
 
@@ -1383,32 +1739,37 @@ function faviconForUrl(value) {
   }
 }
 
-function createShortcutFromForm() {
+async function createShortcutFromForm(previousShortcut = null) {
   const url = getValidShortcutUrl(shortcutUrl.value);
   const name = shortcutName.value.trim();
   const iconText = (shortcutIconText.value || name.slice(0, 1) || "A").slice(0, 2).toUpperCase();
+  const shortcutId = editingShortcutId || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()));
 
   shortcutUrl.setCustomValidity(url || !shortcutUrl.value.trim() ? "" : "请输入有效的网址");
   if (!url) shortcutUrl.reportValidity();
   if (!url || !name) return null;
 
   return {
-    id: editingShortcutId || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
+    id: shortcutId,
     name,
     url,
     iconText,
     color: selectedShortcutColor,
-    image: uploadedIcon,
+    image: await persistShortcutIconAsset(shortcutId, uploadedIcon, previousShortcut?.image || editingShortcutIconAssetRef),
     hotkey: shortcutKey.value.trim()
   };
 }
 
-function saveShortcut({ keepOpen = false } = {}) {
-  const shortcut = createShortcutFromForm();
+async function saveShortcut({ keepOpen = false } = {}) {
+  const previousShortcut = editingShortcutId ? shortcuts.find((item) => item.id === editingShortcutId) : null;
+  const shortcut = await createShortcutFromForm(previousShortcut);
   if (!shortcut) return;
 
   if (editingShortcutId) {
     shortcuts = shortcuts.map((item) => (item.id === editingShortcutId ? shortcut : item));
+    if (previousShortcut && previousShortcut.image && previousShortcut.image !== shortcut.image) {
+      await cleanupShortcutIconAsset(previousShortcut.image).catch((error) => console.warn("快捷图标资源删除失败。", error));
+    }
   } else {
     shortcuts.push(shortcut);
   }
@@ -1507,6 +1868,11 @@ function clearPetTimers() {
 }
 
 function startPetMove() {
+  if (!isPetMotionEnabled()) {
+    clearPetTimers();
+    setPetImage("seal");
+    return;
+  }
   if (petDragging) return;
   window.clearTimeout(petIdleTimer);
   setPetImage("move");
@@ -1541,6 +1907,7 @@ function startPetMove() {
 }
 
 function startPetIdle() {
+  if (!isPetMotionEnabled()) return;
   if (petDragging) return;
   setPetImage(Math.random() > 0.5 ? "seal" : "sigh");
   petIdleTimer = window.setTimeout(startPetMove, 1800 + Math.random() * 2400);
@@ -1557,7 +1924,153 @@ function startPetTemporaryState(state, duration = 1800) {
 
 function initializePet() {
   placePet(window.innerWidth * 0.42, window.innerHeight * 0.67);
-  petIdleTimer = window.setTimeout(startPetMove, 600);
+  if (isPetMotionEnabled()) {
+    petIdleTimer = window.setTimeout(startPetMove, 600);
+  } else {
+    setPetImage("seal");
+  }
+}
+
+function buildSearchUrl(query) {
+  const engine = engines[selectedEngine] || engines.google;
+  const encoded = encodeURIComponent(query);
+  return engine.url.includes("%s") ? engine.url.replaceAll("%s", encoded) : `${engine.url}${encoded}`;
+}
+
+function renderCustomSearchEngines() {
+  customEngineList.innerHTML = "";
+  if (!customSearchEngines.length) {
+    const empty = document.createElement("small");
+    empty.textContent = "还没有自定义搜索引擎。";
+    customEngineList.append(empty);
+    return;
+  }
+
+  for (const engine of customSearchEngines) {
+    const item = document.createElement("div");
+    const copy = document.createElement("span");
+    const title = document.createElement("strong");
+    const url = document.createElement("small");
+    const remove = document.createElement("button");
+    item.className = "custom-engine-item";
+    title.textContent = engine.label;
+    url.textContent = engine.url;
+    remove.type = "button";
+    remove.className = "text-button ghost";
+    remove.textContent = "删除";
+    remove.addEventListener("click", () => {
+      customSearchEngines = customSearchEngines.filter((itemEngine) => itemEngine.id !== engine.id);
+      if (selectedEngine === engine.id) {
+        selectedEngine = "google";
+        localStorage.setItem(storageKeys.engine, selectedEngine);
+      }
+      saveCustomSearchEngines();
+      loadCustomSearchEngines();
+      buildEngineMenu();
+      renderEngine();
+      renderCustomSearchEngines();
+    });
+    copy.append(title, url);
+    item.append(copy, remove);
+    customEngineList.append(item);
+  }
+}
+
+function closeSearchSuggestions() {
+  searchSuggestions = [];
+  activeSuggestionIndex = -1;
+  searchSuggestionsPanel.classList.remove("is-open");
+  searchSuggestionsPanel.innerHTML = "";
+}
+
+function renderSearchSuggestions(items) {
+  searchSuggestions = items.slice(0, 8);
+  activeSuggestionIndex = -1;
+  searchSuggestionsPanel.innerHTML = "";
+
+  if (!searchSuggestions.length) {
+    closeSearchSuggestions();
+    return;
+  }
+
+  searchSuggestions.forEach((item, index) => {
+    const button = document.createElement("button");
+    const icon = document.createElement("span");
+    const text = document.createElement("span");
+    const source = document.createElement("small");
+    button.type = "button";
+    button.className = "suggestion-item";
+    button.setAttribute("role", "option");
+    button.dataset.index = String(index);
+    icon.textContent = item.source === "history" ? "↺" : "⌕";
+    text.textContent = item.text;
+    source.textContent = item.source === "history" ? "历史" : "建议";
+    button.append(icon, text, source);
+    button.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      applySearchSuggestion(index, true);
+    });
+    searchSuggestionsPanel.append(button);
+  });
+
+  searchSuggestionsPanel.classList.add("is-open");
+}
+
+function updateActiveSuggestion(nextIndex) {
+  if (!searchSuggestions.length) return;
+  activeSuggestionIndex = (nextIndex + searchSuggestions.length) % searchSuggestions.length;
+  for (const button of searchSuggestionsPanel.querySelectorAll(".suggestion-item")) {
+    button.classList.toggle("is-active", Number(button.dataset.index) === activeSuggestionIndex);
+  }
+  searchInput.value = searchSuggestions[activeSuggestionIndex].text;
+}
+
+function applySearchSuggestion(index, shouldSubmit = false) {
+  const item = searchSuggestions[index];
+  if (!item) return;
+  searchInput.value = item.text;
+  closeSearchSuggestions();
+  if (shouldSubmit) searchForm.requestSubmit();
+}
+
+async function fetchRemoteSuggestions(query, requestId) {
+  if (!query || !searchSettings.suggestions) return [];
+  try {
+    const response = await fetch(`https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}&type=list`, { cache: "no-store" });
+    if (!response.ok || requestId !== searchSuggestRequestId) return [];
+    const data = await response.json();
+    if (!Array.isArray(data)) return [];
+    return data.map((item) => item.phrase || item.text || "").filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function updateSearchSuggestions() {
+  window.clearTimeout(searchSuggestTimer);
+  const query = searchInput.value.trim();
+  if (!query || !searchSettings.suggestions) {
+    closeSearchSuggestions();
+    return;
+  }
+
+  const localItems = searchHistory
+    .filter((item) => item.includes(query))
+    .slice(0, 5)
+    .map((text) => ({ text, source: "history" }));
+  renderSearchSuggestions(localItems);
+
+  const requestId = ++searchSuggestRequestId;
+  searchSuggestTimer = window.setTimeout(async () => {
+    const remote = await fetchRemoteSuggestions(query, requestId);
+    if (requestId !== searchSuggestRequestId) return;
+    const merged = [...localItems];
+    for (const text of remote) {
+      if (!merged.some((item) => item.text === text)) merged.push({ text, source: "remote" });
+      if (merged.length >= 8) break;
+    }
+    renderSearchSuggestions(merged);
+  }, 220);
 }
 
 function spawnMeteor(now) {
@@ -1612,7 +2125,7 @@ function drawMeteor(meteor) {
 }
 
 function animate(now) {
-  if (document.hidden || isMusicActivelyPlaying()) {
+  if (document.hidden || isMusicActivelyPlaying() || !areMeteorsEnabled()) {
     meteorAnimationId = 0;
     return;
   }
@@ -1642,7 +2155,7 @@ function animate(now) {
 }
 
 function startMeteorAnimation() {
-  if (meteorAnimationId || document.hidden || isMusicActivelyPlaying()) return;
+  if (meteorAnimationId || document.hidden || isMusicActivelyPlaying() || !areMeteorsEnabled()) return;
   lastTime = performance.now();
   lastMeteorPaintAt = 0;
   meteorAnimationId = requestAnimationFrame(animate);
@@ -1663,7 +2176,9 @@ searchForm.addEventListener("submit", (event) => {
     return;
   }
 
-  const searchUrl = `${engines[selectedEngine].url}${encodeURIComponent(query)}`;
+  rememberSearchQuery(query);
+  closeSearchSuggestions();
+  const searchUrl = buildSearchUrl(query);
   if (searchNewTabToggle.checked) {
     window.open(searchUrl, "_blank", "noopener,noreferrer");
   } else {
@@ -1676,12 +2191,36 @@ engineButton.addEventListener("click", () => {
   engineButton.setAttribute("aria-expanded", String(isOpen));
 });
 
+searchInput.addEventListener("input", updateSearchSuggestions);
+
+searchInput.addEventListener("focus", updateSearchSuggestions);
+
+searchInput.addEventListener("keydown", (event) => {
+  if (!searchSuggestions.length) return;
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    updateActiveSuggestion(activeSuggestionIndex + 1);
+  }
+  if (event.key === "ArrowUp") {
+    event.preventDefault();
+    updateActiveSuggestion(activeSuggestionIndex - 1);
+  }
+  if (event.key === "Escape") {
+    closeSearchSuggestions();
+  }
+  if (event.key === "Enter" && activeSuggestionIndex >= 0) {
+    event.preventDefault();
+    applySearchSuggestion(activeSuggestionIndex, true);
+  }
+});
+
 document.addEventListener("click", (event) => {
   spawnClickEffect(event);
   if (!enginePicker.contains(event.target)) {
     enginePicker.classList.remove("is-open");
     engineButton.setAttribute("aria-expanded", "false");
   }
+  if (!searchForm.contains(event.target)) closeSearchSuggestions();
 });
 
 settingsButton.addEventListener("click", () => {
@@ -1692,9 +2231,22 @@ settingsDialog.addEventListener("click", (event) => {
   if (event.target === settingsDialog) settingsDialog.close();
 });
 
+for (const tab of settingsTabs) {
+  tab.addEventListener("click", () => {
+    const target = tab.dataset.settingsTab;
+    for (const item of settingsTabs) {
+      item.classList.toggle("is-active", item === tab);
+    }
+    for (const panel of settingsPanels) {
+      panel.classList.toggle("is-active", panel.dataset.settingsPanel === target);
+    }
+  });
+}
+
 clockToggle.addEventListener("change", () => {
   const showClock = clockToggle.checked;
   localStorage.setItem(storageKeys.showClock, String(showClock));
+  syncConfigFromLegacyStorage();
   document.documentElement.classList.toggle("prefers-clock-hidden", !showClock);
   clockPanel.classList.toggle("is-hidden", !showClock);
 });
@@ -1702,13 +2254,16 @@ clockToggle.addEventListener("change", () => {
 addShortcutToggle.addEventListener("change", () => {
   const showAddShortcut = addShortcutToggle.checked;
   localStorage.setItem(storageKeys.showAddShortcut, String(showAddShortcut));
+  syncConfigFromLegacyStorage();
   document.documentElement.classList.toggle("prefers-shortcuts-hidden", !showAddShortcut);
   shortcutRow.classList.toggle("is-hidden", !showAddShortcut);
+  shortcutPager.classList.toggle("is-visible", showAddShortcut && shortcutLayout.paging && getShortcutPageCount() > 1);
 });
 
 cloudToggle.addEventListener("change", () => {
   const showClouds = cloudToggle.checked;
   localStorage.setItem(storageKeys.showClouds, String(showClouds));
+  syncConfigFromLegacyStorage();
   document.documentElement.classList.toggle("prefers-clouds-hidden", !showClouds);
   pixelGround.classList.toggle("is-hidden", !showClouds);
 });
@@ -1716,11 +2271,93 @@ cloudToggle.addEventListener("change", () => {
 bottomSpectrumToggle.addEventListener("change", () => {
   const showBottomSpectrum = bottomSpectrumToggle.checked;
   localStorage.setItem(storageKeys.showBottomSpectrum, String(showBottomSpectrum));
+  syncConfigFromLegacyStorage();
   setBottomSpectrumVisibility(showBottomSpectrum);
 });
 
 searchNewTabToggle.addEventListener("change", () => {
   localStorage.setItem(storageKeys.openSearchInNewTab, String(searchNewTabToggle.checked));
+  syncConfigFromLegacyStorage();
+});
+
+shortcutPagingToggle.addEventListener("change", () => {
+  shortcutLayout.paging = shortcutPagingToggle.checked;
+  shortcutPage = 0;
+  saveShortcutLayout();
+  renderShortcuts();
+});
+
+shortcutColumnsInput.addEventListener("input", () => {
+  updateRangeVisual(shortcutColumnsInput);
+  shortcutLayout.columns = clampNumber(shortcutColumnsInput.value, 3, 8, 5);
+  shortcutPage = 0;
+  saveShortcutLayout();
+  renderShortcuts();
+});
+
+shortcutRowsInput.addEventListener("input", () => {
+  updateRangeVisual(shortcutRowsInput);
+  shortcutLayout.rows = clampNumber(shortcutRowsInput.value, 1, 3, 1);
+  shortcutPage = 0;
+  saveShortcutLayout();
+  renderShortcuts();
+});
+
+searchSuggestToggle.addEventListener("change", () => {
+  searchSettings.suggestions = searchSuggestToggle.checked;
+  saveSearchSettings();
+  updateSearchSuggestions();
+});
+
+searchHistoryToggle.addEventListener("change", () => {
+  searchSettings.historyEnabled = searchHistoryToggle.checked;
+  saveSearchSettings();
+  if (!searchSettings.historyEnabled) closeSearchSuggestions();
+});
+
+clearSearchHistoryButton.addEventListener("click", () => {
+  searchHistory = [];
+  saveSearchHistory();
+  closeSearchSuggestions();
+});
+
+addCustomEngineButton.addEventListener("click", () => {
+  const label = customEngineName.value.trim();
+  const url = normalizeSearchTemplate(customEngineUrl.value);
+  if (!label || !url) {
+    customEngineUrl.setCustomValidity(url ? "" : "请输入包含 %s 的有效 http/https 搜索 URL");
+    customEngineUrl.reportValidity();
+    return;
+  }
+  customEngineUrl.setCustomValidity("");
+  customSearchEngines.push({ id: createCustomEngineId(), label, url });
+  customEngineName.value = "";
+  customEngineUrl.value = "";
+  saveCustomSearchEngines();
+  loadCustomSearchEngines();
+  buildEngineMenu();
+  renderEngine();
+  renderCustomSearchEngines();
+});
+
+perfLowPowerToggle.addEventListener("change", () => {
+  updatePerformanceSetting("lowPower", perfLowPowerToggle.checked);
+});
+
+perfMeteorsToggle.addEventListener("change", () => {
+  updatePerformanceSetting("meteors", perfMeteorsToggle.checked);
+});
+
+perfClickEffectsToggle.addEventListener("change", () => {
+  updatePerformanceSetting("clickEffects", perfClickEffectsToggle.checked);
+});
+
+perfPetMotionToggle.addEventListener("change", () => {
+  updatePerformanceSetting("petMotion", perfPetMotionToggle.checked);
+});
+
+perfLyricsToggle.addEventListener("change", () => {
+  updatePerformanceSetting("lyrics", perfLyricsToggle.checked);
 });
 
 addShortcutButton.addEventListener("click", () => {
@@ -1739,11 +2376,11 @@ cancelShortcutButton.addEventListener("click", () => {
 
 shortcutForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  saveShortcut();
+  void saveShortcut().catch((error) => console.error("保存快捷方式失败。", error));
 });
 
 saveMoreShortcutButton.addEventListener("click", () => {
-  saveShortcut({ keepOpen: true });
+  void saveShortcut({ keepOpen: true }).catch((error) => console.error("保存快捷方式失败。", error));
 });
 
 shortcutName.addEventListener("input", () => {
@@ -1802,6 +2439,7 @@ backgroundFile.addEventListener("change", () => {
     try {
       await writeAsset(backgroundAssetKey, result);
       localStorage.setItem(storageKeys.background, backgroundIndexedRef);
+      syncConfigFromLegacyStorage();
       backgroundUrl.value = "";
     } catch (error) {
       console.warn("原图保存失败，尝试保存压缩版本。", error);
@@ -1931,10 +2569,13 @@ shortcutMenu.addEventListener("click", (event) => {
   }
 
   if (action === "edit") {
-    openShortcutEditor(shortcut);
+    void openShortcutEditor(shortcut).catch((error) => console.error("打开快捷方式编辑器失败。", error));
   }
 
   if (action === "delete" && window.confirm(`删除快捷方式“${shortcut.name}”？`)) {
+    if (shortcut.image) {
+      void cleanupShortcutIconAsset(shortcut.image).catch((error) => console.warn("快捷图标资源删除失败。", error));
+    }
     shortcuts = shortcuts.filter((item) => item.id !== shortcut.id);
     saveShortcuts();
     renderShortcuts();
@@ -2005,6 +2646,7 @@ document.addEventListener("keydown", (event) => {
 window.addEventListener("resize", resizeCanvas);
 window.addEventListener("resize", () => {
   placePet(petX, petY);
+  renderShortcuts();
 });
 
 document.addEventListener("visibilitychange", () => {
@@ -2021,6 +2663,8 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
+performanceSettings = readPerformanceSettings();
+syncPerformanceToggles();
 loadSettings();
 updateClock();
 setInterval(updateClock, 1000);

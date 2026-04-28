@@ -38,8 +38,10 @@
         const defaults = matchMedia("(max-width: 680px), (pointer: coarse)").matches ? mobileDefaults : desktopDefaults;
 
         try {
+          const config = JSON.parse(localStorage.getItem("pixelNewTab.config") || "{}");
           const saved = JSON.parse(localStorage.getItem("pixelNewTab.appearance") || "{}");
-          const settings = { ...defaults, ...saved };
+          const nextAppearance = config.appearance && typeof config.appearance === "object" ? config.appearance : saved;
+          const settings = { ...defaults, ...nextAppearance };
           root.style.setProperty("--shortcut-opacity", String(settings.iconOpacity / 100));
           root.style.setProperty("--shortcut-scale", String(settings.iconScale / 100));
           root.style.setProperty("--clock-opacity", String(settings.timeOpacity / 100));
@@ -55,10 +57,23 @@
           root.style.setProperty("--dust-opacity", "0.2728");
         }
 
-        if (localStorage.getItem("pixelNewTab.showClock") === "false") root.classList.add("prefers-clock-hidden");
-        if (localStorage.getItem("pixelNewTab.showAddShortcut") !== "true") root.classList.add("prefers-shortcuts-hidden");
-        if (localStorage.getItem("pixelNewTab.showClouds") === "false") root.classList.add("prefers-clouds-hidden");
-        if (localStorage.getItem("pixelNewTab.showBottomSpectrum") === "false") root.classList.add("prefers-bottom-spectrum-hidden");
+        try {
+          const config = JSON.parse(localStorage.getItem("pixelNewTab.config") || "{}");
+          const display = config.display && typeof config.display === "object" ? config.display : {};
+          const showClock = localStorage.getItem("pixelNewTab.showClock") ?? String(display.showClock ?? true);
+          const showShortcuts = localStorage.getItem("pixelNewTab.showAddShortcut") ?? String(display.showShortcuts ?? false);
+          const showClouds = localStorage.getItem("pixelNewTab.showClouds") ?? String(display.showClouds ?? true);
+          const showBottomSpectrum = localStorage.getItem("pixelNewTab.showBottomSpectrum") ?? String(display.showBottomSpectrum ?? true);
+          if (showClock === "false") root.classList.add("prefers-clock-hidden");
+          if (showShortcuts !== "true") root.classList.add("prefers-shortcuts-hidden");
+          if (showClouds === "false") root.classList.add("prefers-clouds-hidden");
+          if (showBottomSpectrum === "false") root.classList.add("prefers-bottom-spectrum-hidden");
+        } catch {
+          if (localStorage.getItem("pixelNewTab.showClock") === "false") root.classList.add("prefers-clock-hidden");
+          if (localStorage.getItem("pixelNewTab.showAddShortcut") !== "true") root.classList.add("prefers-shortcuts-hidden");
+          if (localStorage.getItem("pixelNewTab.showClouds") === "false") root.classList.add("prefers-clouds-hidden");
+          if (localStorage.getItem("pixelNewTab.showBottomSpectrum") === "false") root.classList.add("prefers-bottom-spectrum-hidden");
+        }
       })();
     </script>
     <link rel="stylesheet" href="./styles.css" />
@@ -73,7 +88,11 @@
         const desktopBackground = "./assets/wallpapers/default-config.png";
         const mobileBackground = "./assets/wallpapers/mobile-default.jpg";
         const indexedBackground = "indexeddb:background.original";
-        const savedBackground = localStorage.getItem("pixelNewTab.background");
+        let config = {};
+        try {
+          config = JSON.parse(localStorage.getItem("pixelNewTab.config") || "{}");
+        } catch {}
+        const savedBackground = localStorage.getItem("pixelNewTab.background") || config.background?.value || "";
         const fallbackBackground = matchMedia("(max-width: 680px), (pointer: coarse)").matches ? mobileBackground : desktopBackground;
 
         image.src = savedBackground && savedBackground !== indexedBackground ? savedBackground : fallbackBackground;
@@ -112,6 +131,7 @@
           <button class="search-submit" type="submit" aria-label="搜索">
             <span aria-hidden="true">⌕</span>
           </button>
+          <div class="search-suggestions" id="searchSuggestions" role="listbox" aria-label="搜索建议"></div>
         </form>
       </section>
 
@@ -121,6 +141,7 @@
           <span>添加图标</span>
         </button>
       </section>
+      <div class="shortcut-pager" id="shortcutPager" aria-label="快捷入口分页"></div>
 
       <div class="shortcut-menu" id="shortcutMenu" role="menu" aria-hidden="true">
         <button type="button" data-action="open" role="menuitem">打开</button>
@@ -178,152 +199,296 @@
           <button class="icon-button" value="close" aria-label="关闭设置">×</button>
         </header>
 
-        <label class="setting-line">
-          <span>
-            <strong>显示时间</strong>
-            <small>控制中央像素时钟是否展示</small>
-          </span>
-          <input id="clockToggle" type="checkbox" role="switch" checked />
-        </label>
+        <div class="settings-layout">
+          <nav class="settings-tabs" aria-label="设置分类">
+            <button class="settings-tab is-active" type="button" data-settings-tab="general">常规</button>
+            <button class="settings-tab" type="button" data-settings-tab="search">搜索</button>
+            <button class="settings-tab" type="button" data-settings-tab="shortcuts">快捷</button>
+            <button class="settings-tab" type="button" data-settings-tab="appearance">外观</button>
+            <button class="settings-tab" type="button" data-settings-tab="background">背景</button>
+            <button class="settings-tab" type="button" data-settings-tab="music">音乐</button>
+            <button class="settings-tab" type="button" data-settings-tab="performance">性能</button>
+            <button class="settings-tab" type="button" data-settings-tab="data">数据</button>
+          </nav>
 
-        <label class="setting-line">
-          <span>
-            <strong>显示图标</strong>
-            <small>控制整排网址快捷图标是否展示</small>
-          </span>
-          <input id="addShortcutToggle" type="checkbox" role="switch" />
-        </label>
+          <div class="settings-panels">
+            <section class="settings-panel is-active" data-settings-panel="general">
+              <div class="settings-section-title">
+                <strong>常规显示</strong>
+                <small>控制主页上哪些组件保持可见</small>
+              </div>
+              <label class="setting-line">
+                <span>
+                  <strong>显示时间</strong>
+                  <small>控制中央像素时钟是否展示</small>
+                </span>
+                <input id="clockToggle" type="checkbox" role="switch" checked />
+              </label>
+              <label class="setting-line">
+                <span>
+                  <strong>显示图标</strong>
+                  <small>控制整排网址快捷图标是否展示</small>
+                </span>
+                <input id="addShortcutToggle" type="checkbox" role="switch" />
+              </label>
+              <label class="setting-line">
+                <span>
+                  <strong>搜索新标签页打开</strong>
+                  <small>关闭时在当前页面打开搜索结果</small>
+                </span>
+                <input id="searchNewTabToggle" type="checkbox" role="switch" checked />
+              </label>
+              <label class="setting-line">
+                <span>
+                  <strong>显示底部云朵</strong>
+                  <small>控制主页下方像素云层是否显示</small>
+                </span>
+                <input id="cloudToggle" type="checkbox" role="switch" checked />
+              </label>
+              <label class="setting-line">
+                <span>
+                  <strong>显示底部音阶</strong>
+                  <small>控制主页底部音乐频谱和音符动效是否显示</small>
+                </span>
+                <input id="bottomSpectrumToggle" type="checkbox" role="switch" checked />
+              </label>
+            </section>
 
-        <label class="setting-line">
-          <span>
-            <strong>搜索新标签页打开</strong>
-            <small>关闭时在当前页面打开搜索结果</small>
-          </span>
-          <input id="searchNewTabToggle" type="checkbox" role="switch" checked />
-        </label>
+            <section class="settings-panel" data-settings-panel="search">
+              <div class="settings-section-title">
+                <strong>搜索体验</strong>
+                <small>管理建议、历史和自定义搜索引擎</small>
+              </div>
+              <label class="setting-line">
+                <span>
+                  <strong>搜索建议</strong>
+                  <small>输入时显示历史记录和可用的远程建议</small>
+                </span>
+                <input id="searchSuggestToggle" type="checkbox" role="switch" checked />
+              </label>
+              <label class="setting-line">
+                <span>
+                  <strong>搜索历史</strong>
+                  <small>本地保存最近搜索词，用于建议和快速回填</small>
+                </span>
+                <input id="searchHistoryToggle" type="checkbox" role="switch" checked />
+              </label>
+              <section class="setting-block">
+                <span>
+                  <strong>自定义搜索引擎</strong>
+                  <small>URL 里使用 %s 作为关键词占位，例如 https://example.com/search?q=%s</small>
+                </span>
+                <div class="custom-engine-grid">
+                  <input id="customEngineName" type="text" maxlength="18" placeholder="名称" />
+                  <input id="customEngineUrl" type="url" placeholder="https://example.com/search?q=%s" />
+                  <button class="text-button" id="addCustomEngineButton" type="button">添加</button>
+                </div>
+                <div class="custom-engine-list" id="customEngineList"></div>
+              </section>
+              <div class="settings-actions">
+                <button class="text-button ghost" id="clearSearchHistoryButton" type="button">清空搜索历史</button>
+              </div>
+            </section>
 
-        <label class="setting-line">
-          <span>
-            <strong>显示底部云朵</strong>
-            <small>控制主页下方像素云层是否显示</small>
-          </span>
-          <input id="cloudToggle" type="checkbox" role="switch" checked />
-        </label>
+            <section class="settings-panel" data-settings-panel="shortcuts">
+              <div class="settings-section-title">
+                <strong>快捷入口</strong>
+                <small>像桌面 Launchpad 一样控制行列、分页和排序</small>
+              </div>
+              <label class="setting-line">
+                <span>
+                  <strong>分页显示</strong>
+                  <small>快捷入口超过当前格子数时分页展示</small>
+                </span>
+                <input id="shortcutPagingToggle" type="checkbox" role="switch" checked />
+              </label>
+              <div class="setting-ranges">
+                <label class="range-line">
+                  <span>每页列数</span>
+                  <input id="shortcutColumnsInput" type="range" min="3" max="8" value="5" />
+                </label>
+                <label class="range-line">
+                  <span>每页行数</span>
+                  <input id="shortcutRowsInput" type="range" min="1" max="3" value="1" />
+                </label>
+              </div>
+              <div class="settings-section-title">
+                <strong>拖拽排序</strong>
+                <small>在主页直接拖动快捷图标即可调整顺序</small>
+              </div>
+            </section>
 
-        <label class="setting-line">
-          <span>
-            <strong>显示底部音阶</strong>
-            <small>控制主页底部音乐频谱和音符动效是否显示</small>
-          </span>
-          <input id="bottomSpectrumToggle" type="checkbox" role="switch" checked />
-        </label>
+            <section class="settings-panel" data-settings-panel="appearance">
+              <div class="settings-section-title">
+                <strong>外观布局</strong>
+                <small>微调时间、搜索框和快捷图标的视觉位置</small>
+              </div>
+              <div class="setting-ranges">
+                <label class="range-line">
+                  <span>图标透明度</span>
+                  <input id="iconOpacity" type="range" min="35" max="100" value="100" />
+                </label>
+                <label class="range-line">
+                  <span>图标大小</span>
+                  <input id="iconScale" type="range" min="70" max="140" value="94" />
+                </label>
+                <label class="range-line">
+                  <span>时间透明度</span>
+                  <input id="timeOpacity" type="range" min="35" max="100" value="66" />
+                </label>
+                <label class="range-line">
+                  <span>时间大小</span>
+                  <input id="timeScale" type="range" min="70" max="140" value="85" />
+                </label>
+                <label class="range-line">
+                  <span>搜索框透明度</span>
+                  <input id="searchOpacity" type="range" min="35" max="100" value="61" />
+                </label>
+                <label class="range-line">
+                  <span>搜索框大小</span>
+                  <input id="searchScale" type="range" min="75" max="130" value="100" />
+                </label>
+                <label class="range-line">
+                  <span>遮罩强度</span>
+                  <input id="dustOverlayStrength" type="range" min="0" max="100" value="31" />
+                </label>
+                <label class="range-line">
+                  <span>时间横向位置</span>
+                  <input id="timeX" type="range" min="-40" max="40" value="-26" />
+                </label>
+                <label class="range-line">
+                  <span>时间纵向位置</span>
+                  <input id="timeY" type="range" min="-40" max="40" value="-38" />
+                </label>
+                <label class="range-line">
+                  <span>搜索框横向位置</span>
+                  <input id="searchX" type="range" min="-40" max="40" value="-21" />
+                </label>
+                <label class="range-line">
+                  <span>搜索框纵向位置</span>
+                  <input id="searchY" type="range" min="-40" max="40" value="-34" />
+                </label>
+              </div>
+            </section>
 
-        <label class="setting-block">
-          <span>
-            <strong>上传背景</strong>
-            <small>选择一张本地图片作为背景</small>
-          </span>
-          <input id="backgroundFile" type="file" accept="image/*" />
-        </label>
+            <section class="settings-panel" data-settings-panel="background">
+              <div class="settings-section-title">
+                <strong>背景</strong>
+                <small>切换壁纸、上传图片或使用远程图片</small>
+              </div>
+              <label class="setting-block">
+                <span>
+                  <strong>上传背景</strong>
+                  <small>选择一张本地图片作为背景</small>
+                </span>
+                <input id="backgroundFile" type="file" accept="image/*" />
+              </label>
+              <label class="setting-block">
+                <span>
+                  <strong>背景图片 URL</strong>
+                  <small>粘贴可访问的图片地址</small>
+                </span>
+                <input id="backgroundUrl" type="url" placeholder="https://example.com/bg.png" />
+              </label>
+              <section class="setting-block">
+                <span>
+                  <strong>内置壁纸</strong>
+                  <small>选择一张内置图片作为背景</small>
+                </span>
+                <div class="wallpaper-grid" id="wallpaperGrid"></div>
+              </section>
+              <div class="settings-actions">
+                <button class="text-button" id="applyUrlButton" type="button">应用 URL</button>
+                <button class="text-button ghost" id="resetBackgroundButton" type="button">恢复默认</button>
+              </div>
+            </section>
 
-        <label class="setting-block">
-          <span>
-            <strong>背景图片 URL</strong>
-            <small>粘贴可访问的图片地址</small>
-          </span>
-          <input id="backgroundUrl" type="url" placeholder="https://example.com/bg.png" />
-        </label>
+            <section class="settings-panel" data-settings-panel="music">
+              <div class="settings-section-title">
+                <strong>音乐</strong>
+                <small>管理右下角播放器和 Meting 歌单来源</small>
+              </div>
+              <label class="setting-block">
+                <span>
+                  <strong>音乐链接</strong>
+                  <small>粘贴可直接播放的 mp3/ogg 地址，或打开网易云寻找音乐</small>
+                </span>
+                <input id="musicUrl" type="url" placeholder="https://example.com/music.mp3" />
+              </label>
+              <label class="setting-block">
+                <span>
+                  <strong>Meting 歌单 API</strong>
+                  <small>粘贴自定义 Meting 歌单接口，页面会展示歌单并支持选择歌曲播放</small>
+                </span>
+                <input id="metingApiUrl" type="url" placeholder="https://api.injahow.cn/meting/?server=netease&type=playlist&id=17929070065" />
+              </label>
+              <label class="setting-block">
+                <span>
+                  <strong>导入本地音乐</strong>
+                  <small>选择本地 mp3/ogg/wav 文件，立即在右下角播放器里播放</small>
+                </span>
+                <input id="musicFile" type="file" accept="audio/*" />
+              </label>
+              <div class="settings-actions">
+                <button class="text-button" id="applyMusicButton" type="button">应用音乐</button>
+                <button class="text-button" id="loadPlaylistButton" type="button">加载歌单</button>
+              </div>
+            </section>
 
-        <section class="setting-block">
-          <span>
-            <strong>内置壁纸</strong>
-            <small>选择一张内置图片作为背景</small>
-          </span>
-          <div class="wallpaper-grid" id="wallpaperGrid"></div>
-        </section>
+            <section class="settings-panel" data-settings-panel="performance">
+              <div class="settings-section-title">
+                <strong>性能</strong>
+                <small>像 lemon-new-tab 一样，把动效开销拆成可控开关</small>
+              </div>
+              <label class="setting-line">
+                <span>
+                  <strong>低功耗模式</strong>
+                  <small>暂停流星、小角色自动移动、点击爱心和动态歌词</small>
+                </span>
+                <input id="perfLowPowerToggle" type="checkbox" role="switch" />
+              </label>
+              <label class="setting-line">
+                <span>
+                  <strong>流星背景</strong>
+                  <small>控制全屏 canvas 流星动画</small>
+                </span>
+                <input id="perfMeteorsToggle" type="checkbox" role="switch" checked />
+              </label>
+              <label class="setting-line">
+                <span>
+                  <strong>点击爱心</strong>
+                  <small>控制点击时的蓝色爱心和拖尾粒子</small>
+                </span>
+                <input id="perfClickEffectsToggle" type="checkbox" role="switch" checked />
+              </label>
+              <label class="setting-line">
+                <span>
+                  <strong>小角色自动移动</strong>
+                  <small>关闭后仍可拖拽和点击，但不会自己飞行</small>
+                </span>
+                <input id="perfPetMotionToggle" type="checkbox" role="switch" checked />
+              </label>
+              <label class="setting-line">
+                <span>
+                  <strong>动态歌词浮层</strong>
+                  <small>控制播放音乐时随机出现的发光歌词</small>
+                </span>
+                <input id="perfLyricsToggle" type="checkbox" role="switch" checked />
+              </label>
+            </section>
 
-        <label class="setting-block">
-          <span>
-            <strong>音乐链接</strong>
-            <small>粘贴可直接播放的 mp3/ogg 地址，或打开网易云寻找音乐</small>
-          </span>
-          <input id="musicUrl" type="url" placeholder="https://example.com/music.mp3" />
-        </label>
-
-        <label class="setting-block">
-          <span>
-            <strong>Meting 歌单 API</strong>
-            <small>粘贴自定义 Meting 歌单接口，页面会展示歌单并支持选择歌曲播放</small>
-          </span>
-          <input id="metingApiUrl" type="url" placeholder="https://api.injahow.cn/meting/?server=netease&type=playlist&id=17929070065" />
-        </label>
-
-        <label class="setting-block">
-          <span>
-            <strong>导入本地音乐</strong>
-            <small>选择本地 mp3/ogg/wav 文件，立即在右下角播放器里播放</small>
-          </span>
-          <input id="musicFile" type="file" accept="audio/*" />
-        </label>
-
-        <div class="setting-ranges">
-          <label class="range-line">
-            <span>图标透明度</span>
-            <input id="iconOpacity" type="range" min="35" max="100" value="100" />
-          </label>
-          <label class="range-line">
-            <span>图标大小</span>
-            <input id="iconScale" type="range" min="70" max="140" value="94" />
-          </label>
-          <label class="range-line">
-            <span>时间透明度</span>
-            <input id="timeOpacity" type="range" min="35" max="100" value="66" />
-          </label>
-          <label class="range-line">
-            <span>时间大小</span>
-            <input id="timeScale" type="range" min="70" max="140" value="85" />
-          </label>
-          <label class="range-line">
-            <span>搜索框透明度</span>
-            <input id="searchOpacity" type="range" min="35" max="100" value="61" />
-          </label>
-          <label class="range-line">
-            <span>搜索框大小</span>
-            <input id="searchScale" type="range" min="75" max="130" value="100" />
-          </label>
-          <label class="range-line">
-            <span>遮罩强度</span>
-            <input id="dustOverlayStrength" type="range" min="0" max="100" value="31" />
-          </label>
-          <label class="range-line">
-            <span>时间横向位置</span>
-            <input id="timeX" type="range" min="-40" max="40" value="-26" />
-          </label>
-          <label class="range-line">
-            <span>时间纵向位置</span>
-            <input id="timeY" type="range" min="-40" max="40" value="-38" />
-          </label>
-          <label class="range-line">
-            <span>搜索框横向位置</span>
-            <input id="searchX" type="range" min="-40" max="40" value="-21" />
-          </label>
-          <label class="range-line">
-            <span>搜索框纵向位置</span>
-            <input id="searchY" type="range" min="-40" max="40" value="-34" />
-          </label>
-        </div>
-
-        <div class="settings-actions">
-          <button class="text-button" id="applyUrlButton" type="button">应用 URL</button>
-          <button class="text-button" id="applyMusicButton" type="button">应用音乐</button>
-          <button class="text-button" id="loadPlaylistButton" type="button">加载歌单</button>
-          <button class="text-button ghost" id="resetBackgroundButton" type="button">恢复默认</button>
-        </div>
-
-        <div class="settings-actions">
-          <button class="text-button" id="exportConfigButton" type="button">导出配置</button>
-          <button class="text-button ghost" id="importConfigButton" type="button">导入配置</button>
-          <input id="importConfigFile" class="visually-hidden" type="file" accept="application/json,.json" />
+            <section class="settings-panel" data-settings-panel="data">
+              <div class="settings-section-title">
+                <strong>数据</strong>
+                <small>导入导出配置，完整导出会包含 IndexedDB 资产</small>
+              </div>
+              <div class="settings-actions">
+                <button class="text-button" id="exportConfigButton" type="button">导出配置</button>
+                <button class="text-button ghost" id="importConfigButton" type="button">导入配置</button>
+                <input id="importConfigFile" class="visually-hidden" type="file" accept="application/json,.json" />
+              </div>
+            </section>
+          </div>
         </div>
       </form>
     </dialog>
@@ -387,6 +552,8 @@
       </form>
     </dialog>
 
+    <script src="./src/state/storage.js"></script>
+    <script src="./src/state/settings.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

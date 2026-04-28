@@ -210,9 +210,20 @@ button {
 
 html.prefers-clock-hidden .clock-panel,
 html.prefers-shortcuts-hidden .shortcut-row,
+html.prefers-shortcuts-hidden .shortcut-pager,
 html.prefers-clouds-hidden .pixel-ground,
 html.prefers-bottom-spectrum-hidden .bottom-spectrum {
   display: none;
+}
+
+html.perf-no-lyrics .floating-lyrics,
+html.perf-no-click-effects .click-effect-layer {
+  display: none;
+}
+
+html.perf-low-power .music-note-layer i,
+html.perf-low-power .bottom-notes i {
+  animation-play-state: paused;
 }
 
 .pixel-time {
@@ -322,6 +333,7 @@ html.prefers-bottom-spectrum-hidden .bottom-spectrum {
 }
 
 .search-bar {
+  position: relative;
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr) 54px;
   align-items: center;
@@ -460,12 +472,72 @@ html.prefers-bottom-spectrum-hidden .bottom-spectrum {
   filter: brightness(1.08);
 }
 
+.search-suggestions {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 20px;
+  right: 20px;
+  z-index: 8;
+  display: none;
+  max-height: min(320px, 48vh);
+  overflow: auto;
+  padding: 10px;
+  border: 1px solid rgba(244, 221, 255, 0.32);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(80, 61, 129, 0.96), rgba(45, 34, 82, 0.96)),
+    rgba(45, 34, 82, 0.96);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 22px 44px rgba(35, 24, 75, 0.42);
+}
+
+.search-suggestions.is-open {
+  display: grid;
+  gap: 6px;
+}
+
+.suggestion-item {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--text);
+  font-weight: 900;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.suggestion-item:hover,
+.suggestion-item.is-active {
+  border-color: rgba(255, 226, 250, 0.24);
+  background: rgba(255, 184, 224, 0.14);
+}
+
+.suggestion-item span:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suggestion-item small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
 .shortcut-row {
   position: absolute;
   top: calc(50% + 58px);
   left: 50%;
-  display: flex;
-  gap: 30px;
+  display: grid;
+  grid-template-columns: repeat(var(--shortcut-columns, 5), 86px);
+  grid-auto-rows: 102px;
+  gap: 18px 24px;
+  justify-content: center;
   opacity: var(--shortcut-opacity);
   transform: translateX(-50%);
   scale: var(--shortcut-scale);
@@ -480,12 +552,24 @@ html.prefers-bottom-spectrum-hidden .bottom-spectrum {
   display: grid;
   gap: 10px;
   justify-items: center;
-  min-width: 86px;
+  align-content: start;
+  min-width: 0;
   color: var(--text);
   font-size: 14px;
   font-weight: 900;
   text-decoration: none;
   text-shadow: 0 2px 0 rgba(56, 43, 96, 0.68);
+}
+
+.shortcut.is-dragging {
+  opacity: 0.42;
+  filter: saturate(0.7);
+}
+
+.shortcut.is-drop-target .shortcut-icon {
+  box-shadow:
+    0 0 0 3px rgba(133, 231, 255, 0.24),
+    0 10px 20px rgba(34, 25, 70, 0.28);
 }
 
 .shortcut-icon {
@@ -506,6 +590,34 @@ html.prefers-bottom-spectrum-hidden .bottom-spectrum {
   height: 64%;
   object-fit: contain;
   image-rendering: auto;
+}
+
+.shortcut-pager {
+  position: absolute;
+  top: calc(50% + 164px);
+  left: 50%;
+  z-index: 2;
+  display: none;
+  gap: 8px;
+  transform: translateX(-50%);
+}
+
+.shortcut-pager.is-visible {
+  display: flex;
+}
+
+.shortcut-page-button {
+  width: 11px;
+  height: 11px;
+  padding: 0;
+  border: 1px solid rgba(255, 226, 250, 0.22);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 0 10px rgba(255, 169, 222, 0.12);
+}
+
+.shortcut-page-button.is-active {
+  background: linear-gradient(135deg, var(--pink), var(--cyan));
 }
 
 .add-shortcut {
@@ -1144,7 +1256,8 @@ body.is-music-playing .album-spectrum .spectrum-bar {
 
 .settings-card {
   display: grid;
-  width: min(560px, calc(100vw - 18px));
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(720px, calc(100vw - 18px));
   height: 100%;
   max-height: none;
   margin-left: auto;
@@ -1159,6 +1272,81 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   box-shadow: 0 26px 50px rgba(24, 16, 54, 0.45);
   scrollbar-color: rgba(218, 178, 238, 0.58) rgba(25, 20, 44, 0.24);
   scrollbar-width: thin;
+}
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  min-height: 0;
+  gap: 14px;
+}
+
+.settings-tabs {
+  position: sticky;
+  top: 0;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  align-self: start;
+  padding: 10px;
+  border: 1px solid rgba(255, 226, 250, 0.12);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+    rgba(30, 23, 58, 0.34);
+}
+
+.settings-tab {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: rgba(248, 233, 255, 0.72);
+  font-size: 13px;
+  font-weight: 900;
+  text-align: left;
+  background: transparent;
+  cursor: pointer;
+}
+
+.settings-tab:hover,
+.settings-tab.is-active {
+  color: #fff;
+  border-color: rgba(255, 226, 250, 0.2);
+  background:
+    linear-gradient(135deg, rgba(255, 151, 207, 0.24), rgba(133, 231, 255, 0.12)),
+    rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.settings-panels {
+  min-width: 0;
+}
+
+.settings-panel {
+  display: none;
+  gap: 12px;
+}
+
+.settings-panel.is-active {
+  display: grid;
+}
+
+.settings-section-title {
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 226, 250, 0.1);
+  border-radius: 14px;
+  background: rgba(18, 16, 38, 0.18);
+}
+
+.settings-section-title strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+
+.settings-section-title small {
+  color: var(--muted);
 }
 
 @keyframes settingsDrawerIn {
@@ -1245,6 +1433,10 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   background: rgba(255, 255, 255, 0.06);
 }
 
+.setting-line.is-disabled {
+  opacity: 0.56;
+}
+
 .setting-block {
   display: grid;
   gap: 10px;
@@ -1281,6 +1473,7 @@ body.is-music-playing .album-spectrum .spectrum-bar {
 }
 
 .setting-block input[type="url"],
+.setting-block input[type="text"],
 .setting-block input[type="file"] {
   width: 100%;
 }
@@ -1305,7 +1498,8 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   cursor: pointer;
 }
 
-.setting-block input[type="url"] {
+.setting-block input[type="url"],
+.setting-block input[type="text"] {
   min-height: 42px;
   padding: 0 12px;
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -1313,6 +1507,44 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   color: var(--text);
   background: rgba(27, 20, 62, 0.45);
   outline: 0;
+}
+
+.custom-engine-grid {
+  display: grid;
+  grid-template-columns: minmax(92px, 0.36fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.custom-engine-grid .text-button {
+  grid-column: 1 / -1;
+}
+
+.custom-engine-list {
+  display: grid;
+  gap: 8px;
+}
+
+.custom-engine-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 226, 250, 0.12);
+  border-radius: 12px;
+  background: rgba(24, 18, 50, 0.24);
+}
+
+.custom-engine-item strong,
+.custom-engine-item small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.custom-engine-item small {
+  color: var(--muted);
 }
 
 .wallpaper-grid {
@@ -1718,6 +1950,11 @@ body.is-music-playing .album-spectrum .spectrum-bar {
     width: min(280px, calc(100vw - 48px));
   }
 
+  .search-suggestions {
+    left: 8px;
+    right: 8px;
+  }
+
   .form-grid.with-action {
     grid-template-columns: 1fr;
   }
@@ -1736,9 +1973,19 @@ body.is-music-playing .album-spectrum .spectrum-bar {
     padding-left: 20px;
   }
 
+  .custom-engine-grid {
+    grid-template-columns: 1fr;
+  }
+
   .shortcut-row {
     top: calc(50% + 90px);
+    grid-template-columns: repeat(var(--shortcut-columns, 4), 62px);
+    grid-auto-rows: 90px;
     gap: 18px;
+  }
+
+  .shortcut-pager {
+    top: calc(50% + 188px);
   }
 
   .shortcut-icon {
@@ -1774,6 +2021,24 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   .settings-card {
     max-height: calc(100svh - 20px);
     padding: 16px;
+  }
+
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-tabs {
+    position: static;
+    display: flex;
+    overflow-x: auto;
+    padding: 8px;
+    scrollbar-width: thin;
+  }
+
+  .settings-tab {
+    flex: 0 0 auto;
+    min-width: 72px;
+    text-align: center;
   }
 
   .settings-actions .text-button {
