@@ -3,7 +3,62 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Pixel New Tab</title>
+    <title>Ameath's Tab</title>
+    <link rel="icon" type="image/jpeg" href="./assets/favicon.jpeg" />
+    <link rel="apple-touch-icon" href="./assets/favicon.jpeg" />
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const desktopDefaults = {
+          iconOpacity: 100,
+          iconScale: 94,
+          timeOpacity: 66,
+          timeScale: 85,
+          timeX: -26,
+          timeY: -38,
+          searchOpacity: 61,
+          searchScale: 100,
+          dustOverlayStrength: 31,
+          searchX: -21,
+          searchY: -34
+        };
+        const mobileDefaults = {
+          ...desktopDefaults,
+          timeOpacity: 78,
+          timeScale: 78,
+          timeX: 0,
+          timeY: -18,
+          searchOpacity: 76,
+          searchScale: 92,
+          searchX: 0,
+          searchY: 2
+        };
+        const defaults = matchMedia("(max-width: 680px), (pointer: coarse)").matches ? mobileDefaults : desktopDefaults;
+
+        try {
+          const saved = JSON.parse(localStorage.getItem("pixelNewTab.appearance") || "{}");
+          const settings = { ...defaults, ...saved };
+          root.style.setProperty("--shortcut-opacity", String(settings.iconOpacity / 100));
+          root.style.setProperty("--shortcut-scale", String(settings.iconScale / 100));
+          root.style.setProperty("--clock-opacity", String(settings.timeOpacity / 100));
+          root.style.setProperty("--clock-scale", String(settings.timeScale / 100));
+          root.style.setProperty("--clock-x", `${settings.timeX}vw`);
+          root.style.setProperty("--clock-y", `${settings.timeY * 0.45}vh`);
+          root.style.setProperty("--search-opacity", String(settings.searchOpacity / 100));
+          root.style.setProperty("--search-scale", String(settings.searchScale / 100));
+          root.style.setProperty("--search-x", `${settings.searchX}vw`);
+          root.style.setProperty("--search-y", `${settings.searchY * 0.45}vh`);
+          root.style.setProperty("--dust-opacity", String((settings.dustOverlayStrength / 100) * 0.88));
+        } catch {
+          root.style.setProperty("--dust-opacity", "0.2728");
+        }
+
+        if (localStorage.getItem("pixelNewTab.showClock") === "false") root.classList.add("prefers-clock-hidden");
+        if (localStorage.getItem("pixelNewTab.showAddShortcut") !== "true") root.classList.add("prefers-shortcuts-hidden");
+        if (localStorage.getItem("pixelNewTab.showClouds") === "false") root.classList.add("prefers-clouds-hidden");
+        if (localStorage.getItem("pixelNewTab.showBottomSpectrum") === "false") root.classList.add("prefers-bottom-spectrum-hidden");
+      })();
+    </script>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -63,9 +118,19 @@
       <section class="music-player" id="musicPlayer" aria-label="音乐播放窗口">
         <div class="music-note-layer" aria-hidden="true">
         </div>
-        <div class="mini-spectrum" id="miniSpectrum" aria-hidden="true"></div>
-        <div class="track-title" id="trackTitle">网易云音乐 / 粘贴音频链接</div>
-        <div class="track-subtitle" id="trackSubtitle">Meting Playlist</div>
+        <div class="music-head">
+          <img class="music-cover" id="trackCover" alt="" aria-hidden="true" />
+          <div class="music-track-copy">
+            <div class="track-title" id="trackTitle">网易云音乐 / 粘贴音频链接</div>
+            <div class="track-subtitle" id="trackSubtitle">Meting Playlist</div>
+          </div>
+          <div class="album-spectrum" id="albumSpectrum" aria-hidden="true"></div>
+        </div>
+        <div class="music-progress" aria-label="播放进度">
+          <span id="musicCurrentTime">0:00</span>
+          <input id="musicProgressBar" type="range" min="0" max="1000" value="0" step="1" aria-label="播放进度" />
+          <span id="musicDuration">0:00</span>
+        </div>
         <div class="playlist-panel" id="playlistPanel" aria-label="网易云歌单"></div>
         <div class="music-controls">
           <button id="musicPrevButton" type="button" aria-label="上一首">◀</button>
@@ -78,6 +143,7 @@
       <button class="music-collapse" id="musicCollapseButton" type="button" aria-label="收起音乐窗口">♪</button>
 
       <div class="bottom-spectrum" id="bottomSpectrum" aria-hidden="true"></div>
+      <div class="floating-lyrics" id="floatingLyrics" aria-hidden="true"></div>
       <div class="bottom-notes" aria-hidden="true">
       </div>
 
@@ -108,7 +174,7 @@
             <strong>显示图标</strong>
             <small>控制整排网址快捷图标是否展示</small>
           </span>
-          <input id="addShortcutToggle" type="checkbox" role="switch" checked />
+          <input id="addShortcutToggle" type="checkbox" role="switch" />
         </label>
 
         <label class="setting-line">
@@ -116,7 +182,23 @@
             <strong>搜索新标签页打开</strong>
             <small>关闭时在当前页面打开搜索结果</small>
           </span>
-          <input id="searchNewTabToggle" type="checkbox" role="switch" />
+          <input id="searchNewTabToggle" type="checkbox" role="switch" checked />
+        </label>
+
+        <label class="setting-line">
+          <span>
+            <strong>显示底部云朵</strong>
+            <small>控制主页下方像素云层是否显示</small>
+          </span>
+          <input id="cloudToggle" type="checkbox" role="switch" checked />
+        </label>
+
+        <label class="setting-line">
+          <span>
+            <strong>显示底部音阶</strong>
+            <small>控制主页底部音乐频谱和音符动效是否显示</small>
+          </span>
+          <input id="bottomSpectrumToggle" type="checkbox" role="switch" checked />
         </label>
 
         <label class="setting-block">
@@ -134,6 +216,14 @@
           </span>
           <input id="backgroundUrl" type="url" placeholder="https://example.com/bg.png" />
         </label>
+
+        <section class="setting-block">
+          <span>
+            <strong>内置壁纸</strong>
+            <small>选择一张内置图片作为背景</small>
+          </span>
+          <div class="wallpaper-grid" id="wallpaperGrid"></div>
+        </section>
 
         <label class="setting-block">
           <span>
@@ -166,39 +256,43 @@
           </label>
           <label class="range-line">
             <span>图标大小</span>
-            <input id="iconScale" type="range" min="70" max="140" value="100" />
+            <input id="iconScale" type="range" min="70" max="140" value="94" />
           </label>
           <label class="range-line">
             <span>时间透明度</span>
-            <input id="timeOpacity" type="range" min="35" max="100" value="100" />
+            <input id="timeOpacity" type="range" min="35" max="100" value="66" />
           </label>
           <label class="range-line">
             <span>时间大小</span>
-            <input id="timeScale" type="range" min="70" max="140" value="100" />
+            <input id="timeScale" type="range" min="70" max="140" value="85" />
           </label>
           <label class="range-line">
             <span>搜索框透明度</span>
-            <input id="searchOpacity" type="range" min="35" max="100" value="100" />
+            <input id="searchOpacity" type="range" min="35" max="100" value="61" />
           </label>
           <label class="range-line">
             <span>搜索框大小</span>
             <input id="searchScale" type="range" min="75" max="130" value="100" />
           </label>
           <label class="range-line">
+            <span>遮罩强度</span>
+            <input id="dustOverlayStrength" type="range" min="0" max="100" value="31" />
+          </label>
+          <label class="range-line">
             <span>时间横向位置</span>
-            <input id="timeX" type="range" min="-40" max="40" value="0" />
+            <input id="timeX" type="range" min="-40" max="40" value="-26" />
           </label>
           <label class="range-line">
             <span>时间纵向位置</span>
-            <input id="timeY" type="range" min="-40" max="40" value="0" />
+            <input id="timeY" type="range" min="-40" max="40" value="-38" />
           </label>
           <label class="range-line">
             <span>搜索框横向位置</span>
-            <input id="searchX" type="range" min="-40" max="40" value="0" />
+            <input id="searchX" type="range" min="-40" max="40" value="-21" />
           </label>
           <label class="range-line">
             <span>搜索框纵向位置</span>
-            <input id="searchY" type="range" min="-40" max="40" value="0" />
+            <input id="searchY" type="range" min="-40" max="40" value="-34" />
           </label>
         </div>
 
