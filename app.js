@@ -215,19 +215,24 @@ const backgroundDbName = "pixelNewTab.assets";
 const backgroundStoreName = "assets";
 const backgroundAssetKey = "background.original";
 const backgroundIndexedRef = "indexeddb:background.original";
-const defaultBackground = "./assets/wallpapers/default-config.png";
-const mobileDefaultBackground = "./assets/wallpapers/mobile-default.jpg";
-const builtInWallpapers = [
+const wallpaperDirectory = "./assets/wallpapers/";
+const wallpaperManifest = `${wallpaperDirectory}wallpapers.json`;
+const wallpaperFilePattern = /\.(?:png|jpe?g|webp|gif|avif)$/i;
+const defaultBackground = `${wallpaperDirectory}default-config.png`;
+const mobileDefaultBackground = `${wallpaperDirectory}mobile-default.jpg`;
+const builtInWallpaperSeeds = [
   { name: "默认", src: "./assets/wallpapers/default-config.png" },
   { name: "移动端默认", src: "./assets/wallpapers/mobile-default.jpg" },
   { name: "碎花", src: "./assets/wallpapers/suihua.png" },
   { name: "贺图", src: "./assets/wallpapers/hetu.jpg" },
+  { name: "贺图2", src: "./assets/wallpapers/贺图2.png" },
   { name: "星海", src: "./assets/wallpapers/hdnrtj.jpg" },
   { name: "小爱", src: "./assets/wallpapers/xiaoa.png" },
   { name: "微笑", src: "./assets/wallpapers/weixiao.png" },
   { name: "星轨", src: "./assets/wallpapers/xinghai.jpg" },
   { name: "B站贺图", src: "./assets/wallpapers/bilibili-hetu.png" }
 ];
+let builtInWallpapers = [...builtInWallpaperSeeds];
 
 const petStates = {
   move: "./assets/pet/move.gif",
@@ -246,6 +251,8 @@ function getDefaultBackground() {
 }
 
 async function loadSettings() {
+  await loadBuiltInWallpapers();
+
   const savedEngine = localStorage.getItem(storageKeys.engine);
   const savedClock = localStorage.getItem(storageKeys.showClock);
   const savedAddShortcut = localStorage.getItem(storageKeys.showAddShortcut);
@@ -932,6 +939,99 @@ function syncMusicState() {
 
 function isBuiltInWallpaper(value) {
   return builtInWallpapers.some((wallpaper) => wallpaper.src === value);
+}
+
+async function loadBuiltInWallpapers() {
+  const [manifestWallpapers, discoveredWallpapers] = await Promise.all([
+    loadWallpaperManifest(),
+    discoverWallpaperDirectory()
+  ]);
+  builtInWallpapers = mergeWallpaperLists(builtInWallpaperSeeds, manifestWallpapers, discoveredWallpapers);
+}
+
+async function loadWallpaperManifest() {
+  try {
+    const response = await fetch(wallpaperManifest, { cache: "no-store" });
+    if (!response.ok) return [];
+    const data = await response.json();
+    if (!Array.isArray(data)) return [];
+    return data.map(normalizeWallpaperEntry).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+async function discoverWallpaperDirectory() {
+  try {
+    const response = await fetch(wallpaperDirectory, { cache: "no-store" });
+    if (!response.ok) return [];
+    const html = await response.text();
+    const documentFromHtml = new DOMParser().parseFromString(html, "text/html");
+    return Array.from(documentFromHtml.querySelectorAll("a[href]"))
+      .map((link) => getFileNameFromHref(link.getAttribute("href"), response.url))
+      .map((fileName) => normalizeWallpaperEntry(fileName))
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function getFileNameFromHref(href, baseUrl) {
+  try {
+    const url = new URL(href, baseUrl);
+    return decodeURIComponent(url.pathname.split("/").pop() || "");
+  } catch {
+    return "";
+  }
+}
+
+function mergeWallpaperLists(...lists) {
+  const merged = [];
+  const seen = new Set();
+  for (const list of lists) {
+    for (const entry of list) {
+      const wallpaper = normalizeWallpaperEntry(entry);
+      if (!wallpaper || seen.has(wallpaper.src)) continue;
+      seen.add(wallpaper.src);
+      merged.push(wallpaper);
+    }
+  }
+  return merged;
+}
+
+function normalizeWallpaperEntry(entry) {
+  if (typeof entry === "string") {
+    return createWallpaperEntry(entry, "");
+  }
+
+  if (!entry || typeof entry !== "object") return null;
+  const src = typeof entry.src === "string" ? entry.src : entry.file;
+  const name = typeof entry.name === "string" ? entry.name : "";
+  return createWallpaperEntry(src, name);
+}
+
+function createWallpaperEntry(src, name) {
+  if (typeof src !== "string") return null;
+  const normalizedSrc = normalizeWallpaperSrc(src);
+  if (!normalizedSrc || !wallpaperFilePattern.test(normalizedSrc)) return null;
+  return {
+    name: name.trim() || createWallpaperName(normalizedSrc),
+    src: normalizedSrc
+  };
+}
+
+function normalizeWallpaperSrc(src) {
+  const cleanSrc = src.trim().replaceAll("\\", "/");
+  if (!cleanSrc || cleanSrc.startsWith("http://") || cleanSrc.startsWith("https://")) return "";
+  if (cleanSrc.startsWith("./assets/wallpapers/")) return cleanSrc;
+  if (cleanSrc.startsWith("assets/wallpapers/")) return `./${cleanSrc}`;
+  return `${wallpaperDirectory}${cleanSrc.split("/").pop()}`;
+}
+
+function createWallpaperName(src) {
+  const fileName = src.split("/").pop() || "壁纸";
+  const baseName = fileName.replace(/\.[^.]+$/, "");
+  return decodeURIComponent(baseName).replace(/[-_]+/g, " ");
 }
 
 function renderWallpapers() {
