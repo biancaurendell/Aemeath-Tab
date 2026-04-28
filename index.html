@@ -6,6 +6,8 @@
     <title>Ameath's Tab</title>
     <link rel="icon" type="image/jpeg" href="./assets/favicon.jpeg" />
     <link rel="apple-touch-icon" href="./assets/favicon.jpeg" />
+    <link rel="preload" as="image" href="./assets/wallpapers/default-config.png" fetchpriority="high" />
+    <link rel="preload" as="image" href="./assets/wallpapers/mobile-default.jpg" media="(max-width: 680px), (pointer: coarse)" fetchpriority="high" />
     <script>
       (() => {
         const root = document.documentElement;
@@ -62,7 +64,22 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <img class="custom-background" id="customBackground" alt="" aria-hidden="true" />
+    <img class="custom-background" id="customBackground" src="./assets/wallpapers/default-config.png" fetchpriority="high" alt="" aria-hidden="true" />
+    <script>
+      (() => {
+        const image = document.getElementById("customBackground");
+        if (!image) return;
+
+        const desktopBackground = "./assets/wallpapers/default-config.png";
+        const mobileBackground = "./assets/wallpapers/mobile-default.jpg";
+        const indexedBackground = "indexeddb:background.original";
+        const savedBackground = localStorage.getItem("pixelNewTab.background");
+        const fallbackBackground = matchMedia("(max-width: 680px), (pointer: coarse)").matches ? mobileBackground : desktopBackground;
+
+        image.src = savedBackground && savedBackground !== indexedBackground ? savedBackground : fallbackBackground;
+        image.classList.add("is-active");
+      })();
+    </script>
     <div class="dust-overlay" aria-hidden="true"></div>
     <canvas id="meteorCanvas" aria-hidden="true"></canvas>
 

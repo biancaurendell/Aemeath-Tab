@@ -251,8 +251,7 @@ function getDefaultBackground() {
 }
 
 async function loadSettings() {
-  await loadBuiltInWallpapers();
-
+  const wallpaperLoad = loadBuiltInWallpapers();
   const savedEngine = localStorage.getItem(storageKeys.engine);
   const savedClock = localStorage.getItem(storageKeys.showClock);
   const savedAddShortcut = localStorage.getItem(storageKeys.showAddShortcut);
@@ -293,7 +292,7 @@ async function loadSettings() {
       if (storedBackground) setBackground(storedBackground);
     } else {
       setBackground(savedBackground);
-      backgroundUrl.value = savedBackground.startsWith("data:") || isBuiltInWallpaper(savedBackground) ? "" : savedBackground;
+      backgroundUrl.value = savedBackground.startsWith("data:") ? "" : savedBackground;
     }
   } else {
     setBackground(getDefaultBackground());
@@ -320,6 +319,8 @@ async function loadSettings() {
   renderEngine();
   renderShortcuts();
   buildColorSwatches();
+  await wallpaperLoad;
+  if (isBuiltInWallpaper(activeBackgroundValue)) backgroundUrl.value = "";
   renderWallpapers();
   buildAlbumSpectrum();
   buildSpectrum(bottomSpectrum, 64);
