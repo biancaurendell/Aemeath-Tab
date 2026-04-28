@@ -1363,9 +1363,20 @@ function normalizeUrl(value) {
   return `https://${value.trim()}`;
 }
 
+function getValidShortcutUrl(value) {
+  const normalized = normalizeUrl(value);
+  if (!normalized) return "";
+
+  try {
+    return new URL(normalized).toString();
+  } catch {
+    return "";
+  }
+}
+
 function faviconForUrl(value) {
   try {
-    const parsed = new URL(normalizeUrl(value));
+    const parsed = new URL(getValidShortcutUrl(value));
     return `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(parsed.origin)}`;
   } catch {
     return "";
@@ -1373,10 +1384,12 @@ function faviconForUrl(value) {
 }
 
 function createShortcutFromForm() {
-  const url = normalizeUrl(shortcutUrl.value);
+  const url = getValidShortcutUrl(shortcutUrl.value);
   const name = shortcutName.value.trim();
   const iconText = (shortcutIconText.value || name.slice(0, 1) || "A").slice(0, 2).toUpperCase();
 
+  shortcutUrl.setCustomValidity(url || !shortcutUrl.value.trim() ? "" : "请输入有效的网址");
+  if (!url) shortcutUrl.reportValidity();
   if (!url || !name) return null;
 
   return {
