@@ -225,7 +225,7 @@ const builtInWallpaperSeeds = [
   { name: "移动端默认", src: "./assets/wallpapers/mobile-default.jpg" },
   { name: "碎花", src: "./assets/wallpapers/suihua.png" },
   { name: "贺图", src: "./assets/wallpapers/hetu.jpg" },
-  { name: "贺图2", src: "./assets/wallpapers/贺图2.png" },
+  { name: "贺图2", src: "./assets/wallpapers/贺图2.jpg" },
   { name: "星海", src: "./assets/wallpapers/hdnrtj.jpg" },
   { name: "小爱", src: "./assets/wallpapers/xiaoa.png" },
   { name: "微笑", src: "./assets/wallpapers/weixiao.png" },
