@@ -1,6 +1,7 @@
 name = "imiss"
 compatibility_date = "2026-04-29"
 compatibility_flags = ["nodejs_compat"]
+# account_id = "your-cloudflare-account-id"  # 从 GitHub Secrets 或环境变量读取
 
 [observability]
 enabled = true
