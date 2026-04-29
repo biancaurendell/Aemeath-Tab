@@ -11,6 +11,7 @@
     "test:smoke": "node scripts/smoke-check.mjs",
     "test:smoke:dist": "node scripts/smoke-check.mjs --root=dist",
     "test:visual": "node scripts/visual-check.mjs",
+    "deploy": "npm run deploy:workers",
     "deploy:workers": "npm run pages:build && npx wrangler deploy",
     "deploy:pages": "npm run pages:build && npx wrangler pages deploy dist --project-name imiss"
   },
