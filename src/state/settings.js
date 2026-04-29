@@ -41,6 +41,7 @@
     searchOpacity: 61,
     searchScale: 100,
     dustOverlayStrength: 31,
+    backgroundBlur: 6,
     searchX: -21,
     searchY: -34
   };
@@ -53,12 +54,19 @@
     timeY: -18,
     searchOpacity: 76,
     searchScale: 92,
+    backgroundBlur: 4,
     searchX: 0,
     searchY: 2
   };
 
   const defaultShortcuts = [];
   const currentConfigVersion = 1;
+
+  function getDeviceDefaultAppearance() {
+    return window.matchMedia("(max-width: 680px), (pointer: coarse)").matches
+      ? mobileDefaultAppearance
+      : defaultAppearance;
+  }
 
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
@@ -240,7 +248,7 @@
         historyEnabled: parseBoolean(localStorage.getItem(storageKeys.searchHistoryEnabled), true),
         customEngines: readJson(storageKeys.customSearchEngines, [])
       },
-      appearance: { ...defaultAppearance, ...appearance },
+      appearance: { ...getDeviceDefaultAppearance(), ...appearance },
       background: {
         value: localStorage.getItem(storageKeys.background) || "",
         source: localStorage.getItem(storageKeys.background) ? "saved" : "default"

@@ -90,6 +90,7 @@ const backgroundUrl = document.querySelector("#backgroundUrl");
 const wallpaperGrid = document.querySelector("#wallpaperGrid");
 const applyUrlButton = document.querySelector("#applyUrlButton");
 const resetBackgroundButton = document.querySelector("#resetBackgroundButton");
+const resetAppearanceButton = document.querySelector("#resetAppearanceButton");
 const exportConfigButton = document.querySelector("#exportConfigButton");
 const importConfigButton = document.querySelector("#importConfigButton");
 const importConfigFile = document.querySelector("#importConfigFile");
@@ -155,6 +156,7 @@ const appearanceInputs = {
   searchOpacity: document.querySelector("#searchOpacity"),
   searchScale: document.querySelector("#searchScale"),
   dustOverlayStrength: document.querySelector("#dustOverlayStrength"),
+  backgroundBlur: document.querySelector("#backgroundBlur"),
   searchX: document.querySelector("#searchX"),
   searchY: document.querySelector("#searchY")
 };
@@ -552,6 +554,7 @@ function applyUiSettings() {
   root.style.setProperty("--ui-press-scale", enabled ? "0.97" : "1");
   root.style.setProperty("--ui-lift", enabled ? "-2px" : "0px");
   if (!enabled) {
+    root.classList.remove("search-focused");
     for (const item of document.querySelectorAll(".is-pressing")) {
       item.classList.remove("is-pressing");
     }
@@ -746,6 +749,8 @@ function applyAppearance(settings) {
   rootStyle.setProperty("--search-opacity", String(settings.searchOpacity / 100));
   rootStyle.setProperty("--search-scale", String(settings.searchScale / 100));
   rootStyle.setProperty("--dust-opacity", String((settings.dustOverlayStrength / 100) * 0.88));
+  rootStyle.setProperty("--page-bg-blur", `${settings.backgroundBlur ?? fallback.backgroundBlur}px`);
+  rootStyle.setProperty("--page-bg-scale", String(1.018 + ((settings.backgroundBlur ?? fallback.backgroundBlur) / 360)));
   rootStyle.setProperty("--search-x", `${settings.searchX}vw`);
   rootStyle.setProperty("--search-y", `${settings.searchY * 0.45}vh`);
 
@@ -774,6 +779,13 @@ function saveAppearance() {
   const settings = readAppearanceInputs();
   applyAppearance(settings);
   localStorage.setItem(storageKeys.appearance, JSON.stringify(settings));
+  syncConfigFromLegacyStorage();
+}
+
+function resetAppearanceToDeviceDefault() {
+  localStorage.removeItem(storageKeys.appearance);
+  const settings = getDefaultAppearance();
+  applyAppearance(settings);
   syncConfigFromLegacyStorage();
 }
 
@@ -1542,27 +1554,64 @@ function resetBackground() {
   backgroundFile.value = "";
 }
 
-function renderPixelTime(value) {
-  timeText.textContent = value;
-  timeText.setAttribute("aria-label", value);
+function getDayPeriodLabel(hours) {
+  if (hours < 5) return "凌晨";
+  if (hours < 11) return "上午";
+  if (hours < 13) return "中午";
+  if (hours < 18) return "下午";
+  return "晚上";
+}
+
+function formatLunarDate(date) {
+  try {
+    return new Intl.DateTimeFormat("zh-CN-u-ca-chinese", {
+      month: "long",
+      day: "numeric"
+    }).format(date).replace(/^闰?/, "");
+  } catch {
+    return "";
+  }
+}
+
+function renderPixelTime({ main, seconds, period, full }) {
+  timeText.innerHTML = `
+    <span class="time-main">${main}</span>
+    <span class="time-side" aria-hidden="true">
+      <span class="time-seconds">${seconds}</span>
+      <span class="time-period">${period}</span>
+    </span>
+  `;
+  timeText.setAttribute("aria-label", full);
 }
 
 function updateClock() {
   const now = new Date();
-  const time = new Intl.DateTimeFormat("zh-CN", {
+  const parts = new Intl.DateTimeFormat("zh-CN", {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
     hour12: false
-  }).format(now);
+  }).formatToParts(now);
+  const hour = parts.find((part) => part.type === "hour")?.value || "00";
+  const minute = parts.find((part) => part.type === "minute")?.value || "00";
+  const second = parts.find((part) => part.type === "second")?.value || "00";
   const date = new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
     month: "long",
     day: "numeric",
     weekday: "long"
   }).format(now);
+  const lunarDate = formatLunarDate(now);
+  const mainTime = `${hour}:${minute}`;
+  const fullTime = `${mainTime}:${second}`;
 
-  renderPixelTime(time);
-  dateText.textContent = date;
+  renderPixelTime({
+    main: mainTime,
+    seconds: second,
+    period: getDayPeriodLabel(Number(hour)),
+    full: fullTime
+  });
+  dateText.textContent = lunarDate ? `${date} ${lunarDate}` : date;
 }
 
 function buildEngineMenu() {
@@ -2297,6 +2346,18 @@ searchInput.addEventListener("input", updateSearchSuggestions);
 
 searchInput.addEventListener("focus", updateSearchSuggestions);
 
+searchForm.addEventListener("focusin", () => {
+  if (uiSettings.interactions) document.documentElement.classList.add("search-focused");
+});
+
+searchForm.addEventListener("focusout", () => {
+  window.setTimeout(() => {
+    if (!searchForm.contains(document.activeElement)) {
+      document.documentElement.classList.remove("search-focused");
+    }
+  }, 0);
+});
+
 searchInput.addEventListener("keydown", (event) => {
   if (!searchSuggestions.length) return;
   if (event.key === "ArrowDown") {
@@ -2569,6 +2630,10 @@ applyUrlButton.addEventListener("click", () => {
 });
 
 resetBackgroundButton.addEventListener("click", resetBackground);
+
+if (resetAppearanceButton) {
+  resetAppearanceButton.addEventListener("click", resetAppearanceToDeviceDefault);
+}
 
 exportConfigButton.addEventListener("click", () => {
   exportConfig().catch((error) => {

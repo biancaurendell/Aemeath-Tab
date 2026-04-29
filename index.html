@@ -21,6 +21,7 @@
           searchOpacity: 61,
           searchScale: 100,
           dustOverlayStrength: 31,
+          backgroundBlur: 6,
           searchX: -21,
           searchY: -34
         };
@@ -32,15 +33,16 @@
           timeY: -18,
           searchOpacity: 76,
           searchScale: 92,
+          backgroundBlur: 4,
           searchX: 0,
           searchY: 2
         };
         const defaults = matchMedia("(max-width: 680px), (pointer: coarse)").matches ? mobileDefaults : desktopDefaults;
 
         try {
-          const config = JSON.parse(localStorage.getItem("pixelNewTab.config") || "{}");
-          const saved = JSON.parse(localStorage.getItem("pixelNewTab.appearance") || "{}");
-          const nextAppearance = config.appearance && typeof config.appearance === "object" ? config.appearance : saved;
+          const savedRaw = localStorage.getItem("pixelNewTab.appearance");
+          const saved = savedRaw ? JSON.parse(savedRaw) : {};
+          const nextAppearance = savedRaw ? saved : {};
           const settings = { ...defaults, ...nextAppearance };
           root.style.setProperty("--shortcut-opacity", String(settings.iconOpacity / 100));
           root.style.setProperty("--shortcut-scale", String(settings.iconScale / 100));
@@ -53,6 +55,8 @@
           root.style.setProperty("--search-x", `${settings.searchX}vw`);
           root.style.setProperty("--search-y", `${settings.searchY * 0.45}vh`);
           root.style.setProperty("--dust-opacity", String((settings.dustOverlayStrength / 100) * 0.88));
+          root.style.setProperty("--page-bg-blur", `${settings.backgroundBlur ?? defaults.backgroundBlur ?? 6}px`);
+          root.style.setProperty("--page-bg-scale", String(1.018 + ((settings.backgroundBlur ?? defaults.backgroundBlur ?? 6) / 360)));
 
           const uiInteractions = localStorage.getItem("pixelNewTab.ui.interactions") ?? String(config.ui?.interactions ?? true);
           if (uiInteractions === "false") {
@@ -124,7 +128,7 @@
       <section class="center-stage" aria-label="新标签页搜索">
         <div class="clock-panel" id="clockPanel">
           <time class="pixel-time" id="timeText" aria-label="00:00:00"></time>
-          <div class="date" id="dateText">4月28日 星期二</div>
+          <div class="date" id="dateText">2026年4月29日 星期三</div>
         </div>
 
         <form class="search-bar" id="searchForm" autocomplete="off">
@@ -362,6 +366,10 @@
                   <input id="dustOverlayStrength" type="range" min="0" max="100" value="31" />
                 </label>
                 <label class="range-line">
+                  <span>背景模糊强度</span>
+                  <input id="backgroundBlur" type="range" min="0" max="18" value="6" />
+                </label>
+                <label class="range-line">
                   <span>时间横向位置</span>
                   <input id="timeX" type="range" min="-40" max="40" value="-26" />
                 </label>
@@ -377,6 +385,9 @@
                   <span>搜索框纵向位置</span>
                   <input id="searchY" type="range" min="-40" max="40" value="-34" />
                 </label>
+              </div>
+              <div class="settings-actions">
+                <button class="text-button ghost" id="resetAppearanceButton" type="button">恢复设备默认布局</button>
               </div>
             </section>
 
