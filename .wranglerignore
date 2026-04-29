@@ -1,0 +1,10 @@
+node_modules/**
+.git/**
+.github/**
+wrangler.toml
+wrangler.jsonc
+*.log
+artifacts/**
+dist/**
+build/**
+

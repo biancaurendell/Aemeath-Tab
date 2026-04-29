@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "imiss",
+  "compatibility_date": "2026-04-29",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "./assets"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
+
