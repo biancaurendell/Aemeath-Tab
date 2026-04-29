@@ -15,10 +15,7 @@ export let activeShortcutId = "";
 export let selectedShortcutColor = shortcutColors[0];
 export let uploadedIcon = "";
 
-// Temporary UI state used when showing the Add button via context-menu on other icons
-let addWasHiddenBeforeContext = false;
-let addOriginalNextSibling = null;
-let addTemporaryShownForId = "";
+// ...existing code...
 
 // DOM Elements
 let shortcutRow, addShortcutButton, shortcutPager, shortcutMenu, shortcutDialog, shortcutForm;
@@ -108,106 +105,92 @@ export function saveShortcuts() {
 }
 
 export function renderShortcuts() {
-  if (!shortcutRow) return;
-  for (const item of shortcutRow.querySelectorAll(".shortcut-link")) {
-    item.remove();
-  }
+   if (!shortcutRow) return;
+   for (const item of shortcutRow.querySelectorAll(".shortcut-link")) {
+     item.remove();
+   }
 
-  clampShortcutPage();
-  const slots = getShortcutSlotsPerPage();
-  const totalPages = getShortcutPageCount();
-  const pageStart = shortcutLayout.paging ? shortcutPage * slots : 0;
-  const pageLimit = shortcutLayout.paging && shortcutPage === totalPages - 1 ? slots - 1 : slots;
-  const pageShortcuts = shortcutLayout.paging ? shortcuts.slice(pageStart, pageStart + pageLimit) : shortcuts;
-  document.documentElement.style.setProperty("--shortcut-columns", String(getEffectiveShortcutColumns()));
-  shortcutRow.style.setProperty("--shortcut-columns", String(getEffectiveShortcutColumns()));
+   clampShortcutPage();
+   const slots = getShortcutSlotsPerPage();
+   const totalPages = getShortcutPageCount();
+   const pageStart = shortcutLayout.paging ? shortcutPage * slots : 0;
+   const pageLimit = shortcutLayout.paging && shortcutPage === totalPages - 1 ? slots - 1 : slots;
+   const pageShortcuts = shortcutLayout.paging ? shortcuts.slice(pageStart, pageStart + pageLimit) : shortcuts;
+   document.documentElement.style.setProperty("--shortcut-columns", String(getEffectiveShortcutColumns()));
+   shortcutRow.style.setProperty("--shortcut-columns", String(getEffectiveShortcutColumns()));
 
-  for (const shortcut of pageShortcuts) {
-    const link = document.createElement("a");
-    link.className = "shortcut shortcut-link";
-    link.href = shortcut.url;
-    link.rel = "noreferrer";
-    link.draggable = true;
-    link.dataset.shortcutId = shortcut.id;
-    link.dataset.hotkey = shortcut.hotkey || "";
-    link.addEventListener("dragstart", (event) => {
-      draggedShortcutId = shortcut.id;
-      link.classList.add("is-dragging");
-      event.dataTransfer.effectAllowed = "move";
-      event.dataTransfer.setData("text/plain", shortcut.id);
-    });
-    link.addEventListener("dragend", () => {
-      draggedShortcutId = "";
-      link.classList.remove("is-dragging");
-      clearShortcutDropTargets();
-    });
-    link.addEventListener("dragover", (event) => {
-      if (!draggedShortcutId || draggedShortcutId === shortcut.id) return;
-      event.preventDefault();
-      link.classList.add("is-drop-target");
-    });
-    link.addEventListener("dragleave", () => {
-      link.classList.remove("is-drop-target");
-    });
-    link.addEventListener("drop", (event) => {
-      event.preventDefault();
-      reorderShortcut(draggedShortcutId, shortcut.id);
-    });
-    link.addEventListener("contextmenu", (event) => {
-      event.preventDefault();
-      openShortcutMenu(event, shortcut.id);
-    });
+   for (const shortcut of pageShortcuts) {
+     const link = document.createElement("a");
+     link.className = "shortcut shortcut-link";
+     link.href = shortcut.url;
+     link.rel = "noreferrer";
+     link.draggable = true;
+     link.dataset.shortcutId = shortcut.id;
+     link.dataset.hotkey = shortcut.hotkey || "";
+     link.addEventListener("dragstart", (event) => {
+       draggedShortcutId = shortcut.id;
+       link.classList.add("is-dragging");
+       event.dataTransfer.effectAllowed = "move";
+       event.dataTransfer.setData("text/plain", shortcut.id);
+     });
+     link.addEventListener("dragend", () => {
+       draggedShortcutId = "";
+       link.classList.remove("is-dragging");
+       clearShortcutDropTargets();
+     });
+     link.addEventListener("dragover", (event) => {
+       if (!draggedShortcutId || draggedShortcutId === shortcut.id) return;
+       event.preventDefault();
+       link.classList.add("is-drop-target");
+     });
+     link.addEventListener("dragleave", () => {
+       link.classList.remove("is-drop-target");
+     });
+     link.addEventListener("drop", (event) => {
+       event.preventDefault();
+       reorderShortcut(draggedShortcutId, shortcut.id);
+     });
+     link.addEventListener("contextmenu", (event) => {
+       event.preventDefault();
+       openShortcutMenu(event, shortcut.id);
+     });
 
-    const icon = document.createElement("span");
-    icon.className = "shortcut-icon";
-    icon.style.setProperty("--shortcut-color", shortcut.color || shortcutColors[0]);
+     const icon = document.createElement("span");
+     icon.className = "shortcut-icon";
+     icon.style.setProperty("--shortcut-color", shortcut.color || shortcutColors[0]);
 
-    if (shortcut.image) {
-      const image = document.createElement("img");
-      image.alt = "";
-      if (isAssetRef(shortcut.image)) {
-        resolveShortcutIconSource(shortcut.image)
-          .then((src) => {
-            if (src) image.src = src;
-          })
-          .catch(() => {});
-      } else {
-        image.src = shortcut.image;
-      }
-      icon.append(image);
-    } else {
-      icon.textContent = (shortcut.iconText || shortcut.name.slice(0, 1) || "A").slice(0, 2).toUpperCase();
-    }
+     if (shortcut.image) {
+       const image = document.createElement("img");
+       image.alt = "";
+       if (isAssetRef(shortcut.image)) {
+         resolveShortcutIconSource(shortcut.image)
+           .then((src) => {
+             if (src) image.src = src;
+           })
+           .catch(() => {});
+       } else {
+         image.src = shortcut.image;
+       }
+       icon.append(image);
+     } else {
+       icon.textContent = (shortcut.iconText || shortcut.name.slice(0, 1) || "A").slice(0, 2).toUpperCase();
+     }
 
-    const label = document.createElement("span");
-    label.textContent = shortcut.name;
-    link.append(icon, label);
-    shortcutRow.insertBefore(link, addShortcutButton);
-  }
+     const label = document.createElement("span");
+     label.textContent = shortcut.name;
+     link.append(icon, label);
+     shortcutRow.insertBefore(link, addShortcutButton);
+   }
 
-  const shouldShowAdd = !shortcutLayout.paging || shortcutPage === totalPages - 1;
-  // Respect per-user single-Add-button hide preference saved under pixelNewTab.addButtonHidden.
-  // If user hid the Add button via context menu, keep it hidden across reloads.
-  const addButtonHidden = (() => {
-    try {
-      return !isMobileViewport() && localStorage.getItem("pixelNewTab.addButtonHidden") === "true";
-    } catch {
-      return false;
-    }
-  })();
-
-  if (shortcuts.length === 0) {
-    // When there are no shortcuts, keep the Add button visible unless user explicitly hid it.
-    if (addShortcutButton) addShortcutButton.hidden = !!addButtonHidden;
-    // Ensure the shortcuts row is visible so user can still restore the Add button by right-clicking the row background.
-    try { document.documentElement.classList.remove("prefers-shortcuts-hidden"); } catch {}
-    if (shortcutRow) shortcutRow.classList.remove("is-hidden");
-  } else {
-    if (addShortcutButton) addShortcutButton.hidden = addButtonHidden ? true : !shouldShowAdd;
-  }
-  renderShortcutPager();
-  shortcutPager.classList.toggle("is-visible", !shortcutRow.classList.contains("is-hidden") && shortcutLayout.paging && totalPages > 1);
-}
+   // 添加按钮始终显示（由设置中的"显示图标"控制整体可见性）
+   // 不再使用单独的隐藏功能
+   const shouldShowAdd = !shortcutLayout.paging || shortcutPage === totalPages - 1;
+   if (addShortcutButton) {
+     addShortcutButton.hidden = !shouldShowAdd;
+   }
+   renderShortcutPager();
+   shortcutPager.classList.toggle("is-visible", !shortcutRow.classList.contains("is-hidden") && shortcutLayout.paging && totalPages > 1);
+ }
 
 function clearShortcutDropTargets() {
   for (const item of shortcutRow.querySelectorAll(".is-drop-target")) {
@@ -247,88 +230,27 @@ function renderShortcutPager() {
   }
 }
 
-// Helpers to control add-button visibility/position when user context-clicks other icons
-function toggleAddVisibility(visible) {
-  try {
-    localStorage.setItem(storageKeys.showAddShortcut, String(visible));
-  } catch {}
-  try {
-    syncConfigFromLegacyStorage();
-  } catch {}
-  try {
-    document.documentElement.classList.toggle("prefers-shortcuts-hidden", !visible);
-    if (shortcutRow) shortcutRow.classList.toggle("is-hidden", !visible);
-    const settingsCheckbox = document.querySelector("#addShortcutToggle");
-    if (settingsCheckbox) settingsCheckbox.checked = visible;
-  } catch {}
-  // Re-render so pager/add placement is correct
-  try { renderShortcuts(); } catch {}
-}
-
-function moveAddButtonAfter(targetLink) {
-  if (!addShortcutButton || !shortcutRow || !targetLink) return;
-  // Save original state so we can restore later
-  addWasHiddenBeforeContext = addShortcutButton.hidden;
-  addOriginalNextSibling = addShortcutButton.nextSibling;
-  addTemporaryShownForId = targetLink.dataset.shortcutId || "";
-  // Make visible and move next to target
-  addShortcutButton.hidden = false;
-  try {
-    shortcutRow.insertBefore(addShortcutButton, targetLink.nextSibling);
-  } catch {}
-}
-
-function restoreAddButtonPosition() {
-  if (!addShortcutButton || !shortcutRow || !addTemporaryShownForId) return;
-  // If it was hidden before showing temporarily, hide and try to restore original slot
-  if (addWasHiddenBeforeContext) {
-    try {
-      if (addOriginalNextSibling && addOriginalNextSibling.parentNode === shortcutRow) {
-        shortcutRow.insertBefore(addShortcutButton, addOriginalNextSibling);
-      } else {
-        shortcutRow.append(addShortcutButton);
-      }
-    } catch {}
-    addShortcutButton.hidden = true;
-  } else {
-    // If it was not hidden before, let renderShortcuts decide placement next time
-    try { shortcutRow.append(addShortcutButton); } catch {}
-  }
-  addTemporaryShownForId = "";
-  addOriginalNextSibling = null;
-  addWasHiddenBeforeContext = false;
-}
+// ...existing code...
 
 export function openShortcutMenu(event, shortcutId) {
-  activeShortcutId = shortcutId;
-  shortcutMenu.classList.add("is-open");
-  shortcutMenu.setAttribute("aria-hidden", "false");
+   activeShortcutId = shortcutId;
+   shortcutMenu.classList.add("is-open");
+   shortcutMenu.setAttribute("aria-hidden", "false");
 
-  const menuWidth = 132;
-  const menuHeight = 132;
-  const x = Math.min(event.clientX, window.innerWidth - menuWidth - 12);
-  const y = Math.min(event.clientY, window.innerHeight - menuHeight - 12);
-  shortcutMenu.style.left = `${Math.max(12, x)}px`;
-  shortcutMenu.style.top = `${Math.max(12, y)}px`;
-
-  // If the Add button is currently hidden, temporarily show it next to the shortcut
-  try {
-    if (addShortcutButton && addShortcutButton.hidden) {
-      const target = shortcutRow?.querySelector(`[data-shortcut-id="${shortcutId}"]`);
-      if (target) moveAddButtonAfter(target);
-    }
-  } catch {}
-}
+   const menuWidth = 132;
+   const menuHeight = 132;
+   const x = Math.min(event.clientX, window.innerWidth - menuWidth - 12);
+   const y = Math.min(event.clientY, window.innerHeight - menuHeight - 12);
+   shortcutMenu.style.left = `${Math.max(12, x)}px`;
+   shortcutMenu.style.top = `${Math.max(12, y)}px`;
+ }
 
 export function closeShortcutMenu() {
-  if (!shortcutMenu) return;
-  shortcutMenu.classList.remove("is-open");
-  shortcutMenu.setAttribute("aria-hidden", "true");
-  activeShortcutId = "";
-
-  // If we showed the Add button temporarily for context, restore previous state
-  try { restoreAddButtonPosition(); } catch {}
-}
+   if (!shortcutMenu) return;
+   shortcutMenu.classList.remove("is-open");
+   shortcutMenu.setAttribute("aria-hidden", "true");
+   activeShortcutId = "";
+ }
 
 export function buildColorSwatches() {
   if (!colorSwatches) return;
@@ -420,7 +342,12 @@ function getValidShortcutUrl(value) {
 export function faviconForUrl(value) {
   try {
     const parsed = new URL(getValidShortcutUrl(value));
-    return `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(parsed.origin)}`;
+    const domain = parsed.hostname;
+
+    // 使用国内CDN服务获取网站图标
+    // 优先使用 360 浏览器的图标服务（国内可靠）
+    // 格式：https://bos.360.cn/v2/favicon/?q=domain
+    return `https://bos.360.cn/v2/favicon/?q=${encodeURIComponent(domain)}`;
   } catch {
     return "";
   }
@@ -515,16 +442,10 @@ export function initShortcuts(domNodes) {
   shortcutColumnsInput = domNodes.shortcutColumnsInput;
   shortcutPagingToggle = domNodes.shortcutPagingToggle;
 
-  readShortcutLayout();
-  syncShortcutLayoutControls();
+   readShortcutLayout();
+   syncShortcutLayoutControls();
 
-  // Respect per-user hidden state for the single Add button (does not hide the whole row)
-  try {
-    const addButtonHidden = localStorage.getItem("pixelNewTab.addButtonHidden") === "true";
-    if (addShortcutButton) addShortcutButton.hidden = !!addButtonHidden;
-  } catch {}
-
-  if (domNodes.shortcutPagingToggle) {
+   if (domNodes.shortcutPagingToggle) {
     domNodes.shortcutPagingToggle.addEventListener("change", () => {
       handleShortcutLayoutChange("paging", domNodes.shortcutPagingToggle.checked);
     });
@@ -544,32 +465,15 @@ export function initShortcuts(domNodes) {
     });
   }
 
-  if (addShortcutButton) {
-    addShortcutButton.addEventListener("click", () => {
-      resetShortcutForm();
-      shortcutDialog.showModal();
-      shortcutName.focus();
-    });
-    // Right-click the Add button to hide this Add button only (persisted per-user).
-    addShortcutButton.addEventListener("contextmenu", (event) => {
-      event.preventDefault();
-      if (isMobileViewport()) return;
-      try { localStorage.setItem("pixelNewTab.addButtonHidden", "true"); } catch {}
-      addShortcutButton.hidden = true;
-    });
-    // Allow right-click on the shortcut row background to restore the Add button
-    try {
-      shortcutRow.addEventListener("contextmenu", (event) => {
-        // only handle clicks directly on the row (not on child shortcuts)
-        if (event.target !== shortcutRow) return;
-        event.preventDefault();
-        try { localStorage.removeItem("pixelNewTab.addButtonHidden"); } catch {}
-        if (addShortcutButton) addShortcutButton.hidden = false;
-      });
-    } catch {}
-  }
+   if (addShortcutButton) {
+     addShortcutButton.addEventListener("click", () => {
+       resetShortcutForm();
+       shortcutDialog.showModal();
+       shortcutName.focus();
+     });
+   }
 
-  if (domNodes.cancelShortcutButton) {
+   if (domNodes.cancelShortcutButton) {
     domNodes.cancelShortcutButton.addEventListener("click", () => {
       shortcutDialog.close();
     });
