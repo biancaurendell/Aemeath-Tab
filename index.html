@@ -133,10 +133,8 @@
 
         <form class="search-bar" id="searchForm" autocomplete="off">
           <div class="engine-picker" id="enginePicker">
-            <span class="engine-dot" id="engineDot">G</span>
-            <button class="engine-button" id="engineButton" type="button" aria-haspopup="listbox" aria-expanded="false">
-              <span id="engineName">GOOGLE</span>
-              <span aria-hidden="true">⌄</span>
+            <button class="engine-button" id="engineButton" type="button" aria-haspopup="listbox" aria-expanded="false" title="切换搜索引擎">
+              <span class="engine-dot" id="engineDot">G</span>
             </button>
             <div class="engine-menu" id="engineMenu" role="listbox" aria-label="选择搜索引擎"></div>
           </div>
@@ -334,17 +332,12 @@
             <section class="settings-panel" data-settings-panel="appearance">
               <div class="settings-section-title">
                 <strong>外观布局</strong>
-                <small>微调时间、搜索框和快捷图标的视觉位置</small>
+                <small>微调界面的视觉参数与位置</small>
               </div>
               <div class="setting-ranges">
-                <label class="range-line">
-                  <span>图标透明度</span>
-                  <input id="iconOpacity" type="range" min="35" max="100" value="100" />
-                </label>
-                <label class="range-line">
-                  <span>图标大小</span>
-                  <input id="iconScale" type="range" min="70" max="140" value="94" />
-                </label>
+                <div class="settings-section-title" style="margin-top: 8px;">
+                  <strong>时间日期</strong>
+                </div>
                 <label class="range-line">
                   <span>时间透明度</span>
                   <input id="timeOpacity" type="range" min="35" max="100" value="66" />
@@ -354,6 +347,18 @@
                   <input id="timeScale" type="range" min="70" max="140" value="85" />
                 </label>
                 <label class="range-line">
+                  <span>时间横向位置</span>
+                  <input id="timeX" type="range" min="-40" max="40" value="-26" />
+                </label>
+                <label class="range-line">
+                  <span>时间纵向位置</span>
+                  <input id="timeY" type="range" min="-40" max="40" value="-38" />
+                </label>
+
+                <div class="settings-section-title" style="margin-top: 16px;">
+                  <strong>搜索框</strong>
+                </div>
+                <label class="range-line">
                   <span>搜索框透明度</span>
                   <input id="searchOpacity" type="range" min="35" max="100" value="61" />
                 </label>
@@ -362,28 +367,36 @@
                   <input id="searchScale" type="range" min="75" max="130" value="100" />
                 </label>
                 <label class="range-line">
-                  <span>遮罩强度</span>
-                  <input id="dustOverlayStrength" type="range" min="0" max="100" value="31" />
-                </label>
-                <label class="range-line">
-                  <span>背景模糊强度</span>
-                  <input id="backgroundBlur" type="range" min="0" max="18" value="6" />
-                </label>
-                <label class="range-line">
-                  <span>时间横向位置</span>
-                  <input id="timeX" type="range" min="-40" max="40" value="-26" />
-                </label>
-                <label class="range-line">
-                  <span>时间纵向位置</span>
-                  <input id="timeY" type="range" min="-40" max="40" value="-38" />
-                </label>
-                <label class="range-line">
                   <span>搜索框横向位置</span>
                   <input id="searchX" type="range" min="-40" max="40" value="-21" />
                 </label>
                 <label class="range-line">
                   <span>搜索框纵向位置</span>
                   <input id="searchY" type="range" min="-40" max="40" value="-34" />
+                </label>
+
+                <div class="settings-section-title" style="margin-top: 16px;">
+                  <strong>快捷图标</strong>
+                </div>
+                <label class="range-line">
+                  <span>图标透明度</span>
+                  <input id="iconOpacity" type="range" min="35" max="100" value="100" />
+                </label>
+                <label class="range-line">
+                  <span>图标大小</span>
+                  <input id="iconScale" type="range" min="70" max="140" value="94" />
+                </label>
+
+                <div class="settings-section-title" style="margin-top: 16px;">
+                  <strong>环境与遮罩</strong>
+                </div>
+                <label class="range-line">
+                  <span>遮罩强度</span>
+                  <input id="dustOverlayStrength" type="range" min="0" max="100" value="31" />
+                </label>
+                <label class="range-line">
+                  <span>背景模糊强度</span>
+                  <input id="backgroundBlur" type="range" min="0" max="18" value="6" />
                 </label>
               </div>
               <div class="settings-actions">
@@ -523,64 +536,46 @@
     <dialog class="shortcut-dialog" id="shortcutDialog">
       <form class="shortcut-card" id="shortcutForm" method="dialog">
         <header class="shortcut-header">
-          <h2 id="shortcutDialogTitle">添加网址快捷方式</h2>
-          <button class="round-close" id="closeShortcutDialogButton" type="button" aria-label="关闭添加图标">×</button>
+          <h2 id="shortcutDialogTitle">添加快速访问</h2>
+          <button class="round-close" id="closeShortcutDialogButton" type="button" aria-label="关闭">×</button>
         </header>
-
-        <div class="form-grid with-action">
-          <label>
-            <span>地址</span>
-            <input id="shortcutUrl" type="text" inputmode="url" autocomplete="url" placeholder="www.example.com" required />
-          </label>
-          <button class="dark-button" id="fetchIconButton" type="button">获取图标</button>
-        </div>
 
         <label class="form-grid">
           <span>名称</span>
-          <input id="shortcutName" type="text" placeholder="网站名称" maxlength="18" required />
+          <input id="shortcutName" type="text" placeholder="" maxlength="18" required />
         </label>
-
-        <fieldset class="color-field">
-          <legend>图标颜色</legend>
-          <div class="color-swatches" id="colorSwatches"></div>
-        </fieldset>
 
         <label class="form-grid">
-          <span>图标文字</span>
-          <input id="shortcutIconText" type="text" value="A" maxlength="2" />
+          <span>地址</span>
+          <input id="shortcutUrl" type="text" inputmode="url" autocomplete="url" placeholder="" required />
         </label>
 
-        <div class="form-grid with-action">
-          <label>
-            <span>键盘快捷键</span>
-            <input id="shortcutKey" type="text" placeholder="点击后按下快捷键，例如 Ctrl+1" readonly />
-          </label>
-          <button class="dark-button" id="clearShortcutKeyButton" type="button">清空快捷键</button>
+        <div class="shortcut-icon-field">
+          <span class="shortcut-icon-label">图标（可选）</span>
+          <div class="shortcut-icon-row">
+            <label class="shortcut-icon-upload" id="uploadIconArea">
+              <input id="iconUpload" type="file" accept="image/*" />
+              <span class="shortcut-icon-upload-preview" id="uploadIconPreview">＋</span>
+            </label>
+            <p class="shortcut-icon-hint">不上传图标时会尝试自动获取。<br/>ICO、SVG、PNG、JPG、WebP</p>
+          </div>
         </div>
 
-        <div class="icon-mode-row">
-          <label class="icon-mode active" id="textIconMode">
-            <input type="radio" name="iconMode" value="text" checked />
-            <span class="icon-preview" id="textIconPreview">A</span>
-            <strong>文字图标</strong>
-          </label>
-          <label class="icon-mode">
-            <input id="iconUpload" type="file" accept="image/*" />
-            <span class="icon-preview upload-preview" id="uploadIconPreview">＋</span>
-            <strong>上传</strong>
-          </label>
-        </div>
+        <!-- Hidden fields kept for JS compatibility -->
+        <input id="shortcutIconText" type="hidden" value="A" />
+        <input id="shortcutKey" type="hidden" />
+        <div id="colorSwatches" hidden></div>
+        <button id="fetchIconButton" type="button" hidden></button>
+        <button id="clearShortcutKeyButton" type="button" hidden></button>
 
         <div class="shortcut-actions">
-          <button class="text-button" id="saveShortcutButton" type="submit" value="save">保存</button>
-          <button class="text-button ghost" id="saveMoreShortcutButton" type="button">保存并继续</button>
-          <button class="text-button ghost" id="cancelShortcutButton" type="button">取消</button>
+          <button class="text-button ghost" id="cancelShortcutButton" type="button">算了</button>
+          <button class="text-button" id="saveShortcutButton" type="submit" value="save">好</button>
+          <button class="text-button ghost" id="saveMoreShortcutButton" type="button" hidden>保存并继续</button>
         </div>
       </form>
     </dialog>
 
-    <script src="./src/state/storage.js"></script>
-    <script src="./src/state/settings.js"></script>
-    <script src="./app.js"></script>
+    <script type="module" src="./src/main.js"></script>
   </body>
 </html>

@@ -19,11 +19,9 @@ wrangler.toml
 wrangler.jsonc
 *.log
 
-# Exclude build/dist directories
+# Exclude generated diagnostics
 artifacts
 artifacts/**
-dist
-dist/**
 build
 build/**
 
@@ -34,8 +32,6 @@ build/**
 .vscode/**
 scripts
 scripts/**
-src
-src/**
 
 # Exclude misc
 .DS_Store

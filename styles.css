@@ -12,6 +12,8 @@
   --clock-scale: 1;
   --clock-x: 0px;
   --clock-y: 0px;
+  --clock-tilt-x: 3deg;
+  --clock-tilt-y: -4deg;
   --search-opacity: 1;
   --search-scale: 1;
   --search-x: 0px;
@@ -198,6 +200,8 @@ button {
 }
 
 .center-stage {
+  position: relative;
+  z-index: 10;
   display: grid;
   width: min(760px, calc(100vw - 36px));
   gap: 22px;
@@ -221,14 +225,21 @@ button {
   user-select: none;
 }
 
-.clock-panel:hover {
+.clock-panel:hover,
+.clock-panel:active {
   filter: brightness(1.08);
   transform: translate3d(var(--clock-x), calc(var(--clock-y) + var(--ui-lift)), 0) scale(calc(var(--clock-scale) * 1.018));
 }
 
 .clock-panel::before,
 .clock-panel::after {
-  display: none;
+  position: absolute;
+  color: rgba(255, 202, 235, 0.58);
+  font-family: "STXingkai", "华文行楷", "KaiTi", "Segoe Script", cursive;
+  font-size: clamp(18px, 2vw, 30px);
+  line-height: 1;
+  text-shadow: 0 0 14px rgba(255, 159, 220, 0.34);
+  pointer-events: none;
 }
 
 .clock-panel::before {
@@ -273,23 +284,28 @@ html.perf-low-power .bottom-notes i {
   justify-content: center;
   gap: clamp(8px, 1vw, 14px);
   min-height: 1em;
-  color: rgba(248, 248, 252, 0.96);
+  color: rgba(255, 222, 244, 0.94);
   font-family:
-    "Inter",
-    "SF Pro Display",
-    "Segoe UI Variable Display",
-    "Segoe UI",
+    "STXingkai",
+    "华文行楷",
+    "FZShuTi",
+    "KaiTi",
     "Microsoft YaHei UI",
-    sans-serif;
-  font-size: clamp(58px, 8vw, 104px);
-  font-weight: 900;
+    "Segoe Script",
+    "Brush Script MT",
+    cursive;
+  font-size: clamp(64px, 12vw, 148px);
+  font-weight: 300;
   letter-spacing: 0;
-  line-height: 0.86;
+  line-height: 0.95;
   text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.42),
-    0 10px 28px rgba(8, 7, 28, 0.38),
-    0 0 18px rgba(255, 255, 255, 0.18);
-  filter: drop-shadow(0 0 10px rgba(119, 202, 255, 0.12));
+    0 0 2px rgba(255, 255, 255, 0.95),
+    0 0 10px rgba(255, 178, 229, 0.76),
+    0 0 26px rgba(255, 128, 207, 0.46),
+    0 0 56px rgba(152, 203, 255, 0.18),
+    0 12px 34px rgba(30, 20, 52, 0.55);
+  -webkit-text-stroke: 0.35px rgba(255, 246, 253, 0.78);
+  filter: drop-shadow(0 0 12px rgba(255, 167, 223, 0.32));
   transform-style: preserve-3d;
   transition:
     filter var(--ui-duration-mid) ease,
@@ -302,7 +318,7 @@ html.perf-low-power .bottom-notes i {
   inset: -10px -16px;
   z-index: -1;
   border-radius: 26px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.12), transparent 66%);
+  background: radial-gradient(circle, rgba(255, 178, 229, 0.2), transparent 66%);
   opacity: 0;
   filter: blur(10px);
   pointer-events: none;
@@ -310,26 +326,27 @@ html.perf-low-power .bottom-notes i {
   transition: opacity var(--ui-duration-mid) ease, transform var(--ui-duration-mid) var(--ui-ease);
 }
 
-.clock-panel:hover .pixel-time {
+.clock-panel:hover .pixel-time,
+.clock-panel:active .pixel-time {
   text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.52),
-    0 14px 34px rgba(8, 7, 28, 0.42),
-    0 0 22px rgba(159, 235, 255, 0.22);
+    0 0 2px rgba(255, 255, 255, 0.98),
+    0 0 14px rgba(255, 190, 235, 0.84),
+    0 0 34px rgba(255, 128, 207, 0.56),
+    0 0 72px rgba(152, 203, 255, 0.24),
+    0 16px 38px rgba(30, 20, 52, 0.58);
   transform: rotateX(3deg) rotateY(-4deg) translateZ(10px);
+  transform: rotateX(var(--clock-tilt-x)) rotateY(var(--clock-tilt-y)) translateZ(10px);
 }
 
-.clock-panel:hover .pixel-time::before {
+.clock-panel:hover .pixel-time::before,
+.clock-panel:active .pixel-time::before {
   opacity: 1;
   transform: scale(1.06);
 }
 
 .time-main {
   display: block;
-  background:
-    linear-gradient(180deg, #ffffff 0%, #f5f7ff 45%, #cfd4e8 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  color: inherit;
 }
 
 .time-side {
@@ -337,13 +354,14 @@ html.perf-low-power .bottom-notes i {
   align-content: center;
   justify-items: start;
   gap: 5px;
-  color: rgba(255, 255, 255, 0.96);
-  font-size: clamp(18px, 2.2vw, 28px);
+  color: rgba(255, 226, 246, 0.94);
+  font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif;
+  font-size: clamp(17px, 2vw, 26px);
   font-weight: 900;
   line-height: 0.92;
   text-shadow:
-    0 2px 8px rgba(8, 7, 28, 0.38),
-    0 0 10px rgba(255, 255, 255, 0.16);
+    0 0 8px rgba(255, 169, 222, 0.5),
+    0 2px 10px rgba(30, 20, 52, 0.42);
   transform: translateY(-2px);
 }
 
@@ -404,17 +422,19 @@ html.perf-low-power .bottom-notes i {
 }
 
 .date {
-  color: rgba(248, 248, 252, 0.84);
+  color: rgba(255, 222, 244, 0.72);
   font-family:
+    "STXingkai",
+    "华文行楷",
+    "KaiTi",
     "Microsoft YaHei UI",
-    "Segoe UI",
-    sans-serif;
-  font-size: clamp(16px, 1.8vw, 22px);
-  font-weight: 800;
-  letter-spacing: 0;
+    serif;
+  font-size: clamp(18px, 2.1vw, 30px);
+  font-weight: 300;
+  letter-spacing: 0.02em;
   text-shadow:
-    0 2px 10px rgba(8, 7, 28, 0.48),
-    0 0 12px rgba(255, 255, 255, 0.12);
+    0 0 8px rgba(255, 169, 222, 0.44),
+    0 0 20px rgba(153, 203, 255, 0.14);
   transition:
     opacity var(--ui-duration-mid) ease,
     transform var(--ui-duration-mid) var(--ui-ease);
@@ -429,6 +449,7 @@ html.perf-low-power .bottom-notes i {
   --search-rest-width: clamp(320px, 40vw, 430px);
   --search-active-width: min(640px, calc(100vw - 42px));
   position: relative;
+  z-index: 10;
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr) 48px;
   align-items: center;
@@ -475,12 +496,10 @@ html.perf-low-power .bottom-notes i {
 .engine-picker {
   position: relative;
   display: grid;
-  grid-template-columns: 30px max-content;
   align-items: center;
-  gap: 8px;
   height: 100%;
-  padding-left: 11px;
-  padding-right: 8px;
+  padding-left: 8px;
+  padding-right: 4px;
 }
 
 .engine-dot {
@@ -494,21 +513,17 @@ html.perf-low-power .bottom-notes i {
   font-weight: 900;
   background: linear-gradient(135deg, var(--gold), var(--cyan));
   box-shadow: 0 0 16px rgba(255, 255, 255, 0.34);
+  pointer-events: none;
 }
 
 .engine-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  width: max-content;
-  min-width: 88px;
-  min-height: 36px;
-  padding: 0 12px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
   border: 1px solid transparent;
-  border-radius: 999px;
-  color: var(--text);
-  font-weight: 900;
+  border-radius: 50%;
   background: rgba(255, 255, 255, 0.04);
   outline: 0;
   transition:
@@ -523,11 +538,6 @@ html.perf-low-power .bottom-notes i {
   filter: brightness(1.04);
   border-color: rgba(255, 246, 255, 0.16);
   background: rgba(255, 255, 255, 0.12);
-}
-
-.engine-button span:first-child {
-  display: inline-block;
-  min-width: 76px;
 }
 
 .engine-menu {
@@ -666,7 +676,7 @@ html.perf-low-power .bottom-notes i {
 
 .suggestion-item {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) auto;
+  grid-template-columns: 24px minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 10px;
   min-height: 38px;
@@ -694,6 +704,45 @@ html.perf-low-power .bottom-notes i {
 .suggestion-item small {
   color: var(--muted);
   font-size: 11px;
+}
+
+.suggestion-delete {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.4);
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  transition: all var(--ui-duration-fast) ease;
+}
+
+.suggestion-delete:hover {
+  color: #ff8ec9;
+  background: rgba(255, 255, 255, 0.12);
+  transform: scale(1.1);
+}
+
+.suggestion-clear-all {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.04);
+  transition: all var(--ui-duration-fast) ease;
+}
+
+.suggestion-clear-all:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 246, 255, 0.16);
 }
 
 .shortcut-row {
@@ -1916,7 +1965,7 @@ body.is-music-playing .album-spectrum .spectrum-bar {
 }
 
 .shortcut-dialog {
-  width: min(1220px, calc(100vw - 18px));
+  width: min(480px, calc(100vw - 32px));
   padding: 0;
   border: 0;
   color: #edf1ff;
@@ -2013,82 +2062,77 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   transition: transform var(--ui-duration-fast) var(--ui-ease), filter var(--ui-duration-fast) ease;
 }
 
-.color-field {
-  min-width: 0;
-  padding: 0;
-  border: 0;
-}
-
-.color-swatches {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-}
-
-.color-swatch {
-  width: 30px;
-  height: 30px;
-  border: 3px solid transparent;
-  border-radius: 999px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-}
-
-.color-swatch.active {
-  border-color: #a9c7ff;
-}
-
-.icon-mode-row {
-  display: flex;
-  gap: 16px;
-}
-
-.icon-mode {
+.shortcut-icon-field {
   display: grid;
   gap: 10px;
-  justify-items: center;
-  width: 100px;
+}
+
+.shortcut-icon-label {
+  display: block;
   color: #dfe7ff;
+  font-size: 15px;
   font-weight: 900;
 }
 
-.icon-mode input {
+.shortcut-icon-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.shortcut-icon-upload {
+  display: grid;
+  flex-shrink: 0;
+  width: 68px;
+  height: 68px;
+  border: 2px dashed rgba(91, 112, 159, 0.6);
+  border-radius: 14px;
+  background: rgba(18, 14, 38, 0.4);
+  place-items: center;
+  cursor: pointer;
+  transition: border-color var(--ui-duration-fast) ease, background var(--ui-duration-fast) ease;
+}
+
+.shortcut-icon-upload:hover {
+  border-color: rgba(169, 199, 255, 0.7);
+  background: rgba(30, 24, 60, 0.55);
+}
+
+.shortcut-icon-upload input {
   position: absolute;
   opacity: 0;
   pointer-events: none;
 }
 
-.icon-preview {
-  --shortcut-color: #5896f2;
+.shortcut-icon-upload-preview {
   display: grid;
-  width: 100px;
-  height: 100px;
-  border: 2px solid rgba(99, 125, 183, 0.54);
-  border-radius: 16px;
-  color: #fff;
-  font-size: 28px;
-  font-weight: 900;
-  background:
-    linear-gradient(135deg, var(--shortcut-color), #5276d2),
-    rgba(21, 31, 58, 0.92);
-  background-position: center;
-  background-size: 60%, cover;
-  background-repeat: no-repeat;
-  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.12);
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  color: #aebce0;
+  font-size: 24px;
   place-items: center;
+  background-size: cover;
+  background-position: center;
 }
 
-.upload-preview {
-  color: #aebce0;
-  background-color: rgba(21, 31, 58, 0.92);
+.shortcut-icon-hint {
+  margin: 0;
+  color: rgba(200, 210, 240, 0.65);
+  font-size: 13px;
+  line-height: 1.7;
 }
 
 .shortcut-actions {
   display: flex;
-  gap: 16px;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
 }
 
 .shortcut-actions .text-button {
-  width: 190px;
+  min-width: 72px;
+  padding: 0 22px;
 }
 
 .pixel-decor {

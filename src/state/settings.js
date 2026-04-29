@@ -1,37 +1,36 @@
-(() => {
-  const { assetKeys, readAssetKeys, readAssetMap, writeAsset } = window.PixelNewTabStorage;
+import { assetKeys, readAssetKeys, readAssetMap, writeAsset } from "./storage.js";
 
-  const storageKeys = {
-    config: "pixelNewTab.config",
-    engine: "pixelNewTab.engine",
-    showClock: "pixelNewTab.showClock",
-    showAddShortcut: "pixelNewTab.showAddShortcut",
-    showClouds: "pixelNewTab.showClouds",
-    showBottomSpectrum: "pixelNewTab.showBottomSpectrum",
-    openSearchInNewTab: "pixelNewTab.openSearchInNewTab",
-    searchSuggestions: "pixelNewTab.search.suggestions",
-    searchHistoryEnabled: "pixelNewTab.search.historyEnabled",
-    searchHistory: "pixelNewTab.search.history",
-    customSearchEngines: "pixelNewTab.search.customEngines",
-    background: "pixelNewTab.background",
-    shortcuts: "pixelNewTab.shortcuts.v2",
-    shortcutRows: "pixelNewTab.shortcuts.layout.rows",
-    shortcutColumns: "pixelNewTab.shortcuts.layout.columns",
-    shortcutPaging: "pixelNewTab.shortcuts.layout.paging",
-    appearance: "pixelNewTab.appearance",
-    musicUrl: "pixelNewTab.musicUrl",
-    metingApiUrl: "pixelNewTab.metingApiUrl",
-    perfLowPower: "pixelNewTab.perf.lowPower",
-    perfMeteors: "pixelNewTab.perf.meteors",
-    perfClickEffects: "pixelNewTab.perf.clickEffects",
-    perfPetMotion: "pixelNewTab.perf.petMotion",
-    perfLyrics: "pixelNewTab.perf.lyrics",
-    uiInteractions: "pixelNewTab.ui.interactions"
-  };
+export const storageKeys = {
+  config: "pixelNewTab.config",
+  engine: "pixelNewTab.engine",
+  showClock: "pixelNewTab.showClock",
+  showAddShortcut: "pixelNewTab.showAddShortcut",
+  showClouds: "pixelNewTab.showClouds",
+  showBottomSpectrum: "pixelNewTab.showBottomSpectrum",
+  openSearchInNewTab: "pixelNewTab.openSearchInNewTab",
+  searchSuggestions: "pixelNewTab.search.suggestions",
+  searchHistoryEnabled: "pixelNewTab.search.historyEnabled",
+  searchHistory: "pixelNewTab.search.history",
+  customSearchEngines: "pixelNewTab.search.customEngines",
+  background: "pixelNewTab.background",
+  shortcuts: "pixelNewTab.shortcuts.v2",
+  shortcutRows: "pixelNewTab.shortcuts.layout.rows",
+  shortcutColumns: "pixelNewTab.shortcuts.layout.columns",
+  shortcutPaging: "pixelNewTab.shortcuts.layout.paging",
+  appearance: "pixelNewTab.appearance",
+  musicUrl: "pixelNewTab.musicUrl",
+  metingApiUrl: "pixelNewTab.metingApiUrl",
+  perfLowPower: "pixelNewTab.perf.lowPower",
+  perfMeteors: "pixelNewTab.perf.meteors",
+  perfClickEffects: "pixelNewTab.perf.clickEffects",
+  perfPetMotion: "pixelNewTab.perf.petMotion",
+  perfLyrics: "pixelNewTab.perf.lyrics",
+  uiInteractions: "pixelNewTab.ui.interactions"
+};
 
-  const defaultMetingApiUrl = "https://api.injahow.cn/meting/?server=netease&type=playlist&id=17929070065";
+export const defaultMetingApiUrl = "https://api.injahow.cn/meting/?server=netease&type=playlist&id=17929070065";
 
-  const defaultAppearance = {
+export const defaultAppearance = {
     iconOpacity: 100,
     iconScale: 94,
     timeOpacity: 66,
@@ -46,20 +45,20 @@
     searchY: -34
   };
 
-  const mobileDefaultAppearance = {
-    ...defaultAppearance,
-    timeOpacity: 78,
-    timeScale: 78,
-    timeX: 0,
-    timeY: -18,
-    searchOpacity: 76,
-    searchScale: 92,
-    backgroundBlur: 4,
-    searchX: 0,
-    searchY: 2
-  };
+export const mobileDefaultAppearance = {
+  ...defaultAppearance,
+  timeOpacity: 78,
+  timeScale: 78,
+  timeX: 0,
+  timeY: -18,
+  searchOpacity: 76,
+  searchScale: 92,
+  backgroundBlur: 4,
+  searchX: 0,
+  searchY: 2
+};
 
-  const defaultShortcuts = [];
+export const defaultShortcuts = [];
   const currentConfigVersion = 1;
 
   function getDeviceDefaultAppearance() {
@@ -221,15 +220,15 @@
     };
   }
 
-  function readConfig() {
-    return mergeConfig(readJson(storageKeys.config, {}));
-  }
+export function readConfig() {
+  return mergeConfig(readJson(storageKeys.config, {}));
+}
 
-  function writeConfig(config) {
-    const normalized = mergeConfig(config);
-    writeJson(storageKeys.config, normalized);
-    return normalized;
-  }
+export function writeConfig(config) {
+  const normalized = mergeConfig(config);
+  writeJson(storageKeys.config, normalized);
+  return normalized;
+}
 
   function readLegacySettings() {
     const appearance = readJson(storageKeys.appearance, {});
@@ -276,21 +275,21 @@
     };
   }
 
-  function syncConfigFromLegacyStorage() {
-    return writeConfig({
-      ...readConfig(),
-      ...readLegacySettings()
-    });
-  }
+export function syncConfigFromLegacyStorage() {
+  return writeConfig({
+    ...readConfig(),
+    ...readLegacySettings()
+  });
+}
 
-  function migrateLegacyConfig() {
-    if (!localStorage.getItem(storageKeys.config)) {
-      return syncConfigFromLegacyStorage();
-    }
-    const config = writeConfig(readConfig());
-    applyConfigToLegacyStorage(config, { onlyMissing: true });
-    return config;
+export function migrateLegacyConfig() {
+  if (!localStorage.getItem(storageKeys.config)) {
+    return syncConfigFromLegacyStorage();
   }
+  const config = writeConfig(readConfig());
+  applyConfigToLegacyStorage(config, { onlyMissing: true });
+  return config;
+}
 
   function writeStorageValue(key, value) {
     if (value === "" || value === null || value === undefined) {
@@ -336,67 +335,54 @@
     writeIfNeeded(storageKeys.uiInteractions, String(config.ui.interactions));
   }
 
-  async function buildConfigSnapshot() {
-    const legacySettings = {};
-    for (const key of Object.values(storageKeys)) {
-      if (key === storageKeys.config) continue;
-      legacySettings[key] = localStorage.getItem(key);
-    }
-
-    return {
-      app: "pixel-new-tab",
-      version: currentConfigVersion,
-      exportedAt: new Date().toISOString(),
-      config: syncConfigFromLegacyStorage(),
-      settings: legacySettings,
-      assets: await collectSnapshotAssets()
-    };
+export async function buildConfigSnapshot() {
+  const legacySettings = {};
+  for (const key of Object.values(storageKeys)) {
+    if (key === storageKeys.config) continue;
+    legacySettings[key] = localStorage.getItem(key);
   }
 
-  async function importConfigSnapshot(snapshot) {
-    if (snapshot.app !== "pixel-new-tab") {
-      throw new Error("不是有效的 Pixel New Tab 配置文件。");
-    }
-
-    if (snapshot.settings && typeof snapshot.settings === "object") {
-      for (const [key, value] of Object.entries(snapshot.settings)) {
-        if (value === null || value === undefined) {
-          localStorage.removeItem(key);
-        } else {
-          localStorage.setItem(key, value);
-        }
-      }
-    }
-
-    if (snapshot.config && typeof snapshot.config === "object") {
-      const config = writeConfig(snapshot.config);
-      applyConfigToLegacyStorage(config);
-    } else if (snapshot.settings) {
-      syncConfigFromLegacyStorage();
-    } else {
-      throw new Error("不是有效的 Pixel New Tab 配置文件。");
-    }
-
-    if (snapshot.assets && typeof snapshot.assets === "object") {
-      await restoreSnapshotAssets(snapshot.assets);
-      if (snapshot.assets[assetKeys.backgroundOriginal] || snapshot.assets.backgroundOriginal) {
-        localStorage.setItem(storageKeys.background, "indexeddb:background.original");
-      }
-      syncConfigFromLegacyStorage();
-    }
-  }
-
-  window.PixelNewTabSettings = {
-    buildConfigSnapshot,
-    defaultAppearance,
-    defaultMetingApiUrl,
-    defaultShortcuts,
-    importConfigSnapshot,
-    migrateLegacyConfig,
-    mobileDefaultAppearance,
-    readConfig,
-    storageKeys,
-    syncConfigFromLegacyStorage,
-    writeConfig,
+  return {
+    app: "pixel-new-tab",
+    version: currentConfigVersion,
+    exportedAt: new Date().toISOString(),
+    config: syncConfigFromLegacyStorage(),
+    settings: legacySettings,
+    assets: await collectSnapshotAssets()
   };
-})();
+}
+
+export async function importConfigSnapshot(snapshot) {
+  if (snapshot.app !== "pixel-new-tab") {
+    throw new Error("不是有效的 Pixel New Tab 配置文件。");
+  }
+
+  if (snapshot.settings && typeof snapshot.settings === "object") {
+    for (const [key, value] of Object.entries(snapshot.settings)) {
+      if (value === null || value === undefined) {
+        localStorage.removeItem(key);
+      } else {
+        localStorage.setItem(key, value);
+      }
+    }
+  }
+
+  if (snapshot.config && typeof snapshot.config === "object") {
+    const config = writeConfig(snapshot.config);
+    applyConfigToLegacyStorage(config);
+  } else if (snapshot.settings) {
+    syncConfigFromLegacyStorage();
+  } else {
+    throw new Error("不是有效的 Pixel New Tab 配置文件。");
+  }
+
+  if (snapshot.assets && typeof snapshot.assets === "object") {
+    await restoreSnapshotAssets(snapshot.assets);
+    if (snapshot.assets[assetKeys.backgroundOriginal] || snapshot.assets.backgroundOriginal) {
+      localStorage.setItem(storageKeys.background, "indexeddb:background.original");
+    }
+    syncConfigFromLegacyStorage();
+  }
+}
+
+

@@ -83,6 +83,7 @@ try {
       localStorage.setItem("pixelNewTab.shortcuts.layout.rows", String(rows));
       localStorage.setItem("pixelNewTab.shortcuts.layout.columns", "5");
       localStorage.setItem("pixelNewTab.shortcuts.layout.paging", "true");
+      localStorage.removeItem("pixelNewTab.appearance");
       localStorage.removeItem("pixelNewTab.config");
     }, { shortcuts: demoShortcuts, rows: name === "mobile" ? 1 : 2 });
     await page.reload({ waitUntil: "networkidle" });

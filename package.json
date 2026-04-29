@@ -4,8 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check:js": "node --check app.js && node --check src/state/settings.js",
-    "test:visual": "node scripts/visual-check.mjs"
+    "dev": "node scripts/serve.mjs",
+    "dev:open": "node scripts/serve.mjs --open",
+    "pages:build": "node scripts/prepare-pages.mjs",
+    "check:js": "node scripts/check-js.mjs",
+    "test:smoke": "node scripts/smoke-check.mjs",
+    "test:smoke:dist": "node scripts/smoke-check.mjs --root=dist",
+    "test:visual": "node scripts/visual-check.mjs",
+    "deploy:workers": "npm run pages:build && npx wrangler deploy",
+    "deploy:pages": "npm run pages:build && npx wrangler pages deploy dist --project-name imiss"
   },
   "devDependencies": {
     "playwright": "^1.57.0"
