@@ -342,12 +342,11 @@ function getValidShortcutUrl(value) {
 export function faviconForUrl(value) {
   try {
     const parsed = new URL(getValidShortcutUrl(value));
-    const domain = parsed.hostname;
 
-    // 使用国内CDN服务获取网站图标
-    // 优先使用 360 浏览器的图标服务（国内可靠）
-    // 格式：https://bos.360.cn/v2/favicon/?q=domain
-    return `https://bos.360.cn/v2/favicon/?q=${encodeURIComponent(domain)}`;
+    // 直接返回网站的 favicon.ico 路径
+    // 这是最通用和可靠的方案，不依赖第三方CDN
+    // 浏览器会自动处理跨域和缓存
+    return `${parsed.origin}/favicon.ico`;
   } catch {
     return "";
   }

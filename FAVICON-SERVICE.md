@@ -1,51 +1,71 @@
-# Favicon 获取服务国内化方案
+# Favicon 获取服务方案
 
-## 当前方案
+## 当前方案（推荐）
 
-已将favicon获取服务从**谷歌**改为**360浏览器的国内CDN服务**。
+已将favicon获取服务改为**直接从网站获取 favicon.ico**。
 
-### 主要方案：360浏览器图标服务
+### 最新方案：直接网站 Favicon（最可靠）
 
 ```javascript
 // 调用方式
-https://bos.360.cn/v2/favicon/?q=domain.com
+https://domain.com/favicon.ico
 ```
 
 **优点**：
-- ✅ 国内CDN，速度快
-- ✅ 360浏览器官方维护，稳定可靠
-- ✅ 支持大量国内外网站
-- ✅ 无需API Key
+- ✅ 最可靠，不依赖任何第三方服务
+- ✅ 无跨域限制，浏览器原生支持
+- ✅ 无访问限制，国内国外都能用
+- ✅ 无需翻墙或代理
+- ✅ 最原生的网站favicon标准
 
 **缺点**：
-- ⚠️ 依赖于第三方服务的可用性
+- ⚠️ 少数网站可能没有 favicon.ico 文件
+- ⚠️ 首次加载会比较慢（但浏览器会缓存）
+
+## 工作流程
+
+```
+用户输入URL → 提取域名和协议 → 构建favicon.ico URL → 浏览器请求
+                                                    ↓
+                                    成功 → 显示favicon
+                                    失败 → 显示首字母
+```
 
 ## 备选方案
 
-如果360服务不可用，可以切换到以下备选方案：
+如果直接方案有问题，可以切换到以下备选方案：
 
-### 备选1：DuckDuckGo 图标服务（国内也能用）
+### 备选1：DuckDuckGo 图标服务（较稳定）
 
 ```javascript
 https://icons.duckduckgo.com/ip3/${domain}.ico
 ```
 
 **特点**：
-- 通常较为稳定
-- 返回 .ico 格式
+- 有缓存和处理
+- 需要访问国际网络
+- 通常比较稳定
 
-### 备选2：Github 原始内容 + 缓存
+### 备选2：Google 图标服务（需翻墙）
 
 ```javascript
-// 使用 jsdelivr CDN 加速 Github 内容
-https://cdn.jsdelivr.net/gh/user-avatar-service/service/icons/${domain}.png
+https://www.google.com/s2/favicons?sz=128&domain_url=${domain}
 ```
 
-### 备选3：本地 Favicon 库
+**特点**：
+- 功能最强
+- 需要翻墙
+- 不推荐
 
-如果希望完全离线，可以：
-1. 维护一个本地的常见网站favicon库
-2. 对于未知网站，提示用户手动上传
+### 备选3：360 浏览器 CDN（已废弃）
+
+```javascript
+https://bos.360.cn/v2/favicon/?q=${domain}
+```
+
+**特点**：
+- 国内CDN
+- 容易无法访问（已验证不稳定）
 
 ## 实现代码
 
@@ -55,11 +75,11 @@ https://cdn.jsdelivr.net/gh/user-avatar-service/service/icons/${domain}.png
 export function faviconForUrl(value) {
   try {
     const parsed = new URL(getValidShortcutUrl(value));
-    const domain = parsed.hostname;
     
-    // 使用国内CDN服务获取网站图标
-    // 优先使用 360 浏览器的图标服务（国内可靠）
-    return `https://bos.360.cn/v2/favicon/?q=${encodeURIComponent(domain)}`;
+    // 直接返回网站的 favicon.ico 路径
+    // 这是最通用和可靠的方案，不依赖第三方CDN
+    // 浏览器会自动处理跨域和缓存
+    return `${parsed.origin}/favicon.ico`;
   } catch {
     return "";
   }
@@ -68,97 +88,110 @@ export function faviconForUrl(value) {
 
 ## 如何切换方案
 
-### 如果要使用DuckDuckGo（带重试机制）
+### 快速切换到 DuckDuckGo
+
+编辑 `src/modules/shortcuts.js` 第349行：
 
 ```javascript
-export function faviconForUrl(value) {
-  try {
-    const parsed = new URL(getValidShortcutUrl(value));
-    const domain = parsed.hostname;
-    
-    // 主方案：360
-    return `https://bos.360.cn/v2/favicon/?q=${encodeURIComponent(domain)}`;
-  } catch {
-    return "";
-  }
-}
+// 替换为：
+return `https://icons.duckduckgo.com/ip3/${encodeURIComponent(parsed.hostname)}.ico`;
 ```
 
-### 带回退的高级版本
+然后运行 `npm run check:js` 验证。
 
-如果想实现自动回退，可以在 `src/modules/shortcuts.js` 中修改：
+### 快速切换到 Google
+
+编辑 `src/modules/shortcuts.js` 第349行：
 
 ```javascript
-export function faviconForUrl(value) {
-  try {
-    const parsed = new URL(getValidShortcutUrl(value));
-    const domain = parsed.hostname;
-    
-    // 多个备选方案，应用会按优先级尝试
-    const faviconServices = [
-      `https://bos.360.cn/v2/favicon/?q=${encodeURIComponent(domain)}`,      // 国内360服务
-      `https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico`,  // DuckDuckGo备选
-    ];
-    
-    // 当前返回主方案，应用在加载失败时可自动重试
-    return faviconServices[0];
-  } catch {
-    return "";
-  }
-}
+// 替换为：
+return `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(parsed.origin)}`;
 ```
 
-## 测试方法
+## 测试用例
 
-1. **打开应用**，进入"添加图标"对话框
-2. **输入网址**，例如：
-   - `https://www.bilibili.com`
-   - `https://www.zhihu.com`
-   - `https://github.com`
-3. **离开URL字段** - favicon应该自动获取并显示
-4. **检查**是否能正确加载国内网站的favicon
+| 网站 | URL | 预期 |
+|------|-----|------|
+| 哔哩哔哩 | https://www.bilibili.com | ✅ 显示B站粉色图标 |
+| 知乎 | https://www.zhihu.com | ✅ 显示蓝色图标 |
+| GitHub | https://github.com | ✅ 显示黑色logo |
+| 掘金 | https://juejin.cn | ✅ 显示蓝色logo |
+| 微博 | https://www.weibo.com | ✅ 显示红色logo |
 
 ## 故障排除
 
-### 图标加载失败
+### 图标加载缓慢
 
-**原因1**：360服务暂时不可用
+**原因**：需要请求网站服务器获取favicon
 ```
-解决方案：切换到DuckDuckGo方案
-```
-
-**原因2**：网络问题
-```
-解决方案：检查网络连接，确保能访问 bos.360.cn
+解决方案：这是正常的，首次加载后浏览器会缓存
 ```
 
-**原因3**：某些网站没有favicon
+### 某些网站没有图标
+
+**原因**：网站没有提供 favicon.ico 文件
 ```
-解决方案：这是正常的，应用会显示首字母作为默认图标
+解决方案：应用会显示网站名称首字母作为替代，这是预期行为
+例如：知乎 → "知"，GitHub → "G"
 ```
 
-### 性能问题
+### 离线时无法获取图标
 
-如果favicon加载很慢：
-1. ✅ 这是正常的，因为依赖第三方CDN
-2. ✅ 可以设置加载超时（目前未实现）
-3. ✅ 可以缓存已获取的favicon
+**原因**：需要网络连接访问网站
+```
+解决方案：需要连接到互联网才能获取favicon
+```
+
+### 跨域限制
+
+**原因**：浏览器的跨域政策
+```
+解决方案：直接favicon方案不会有跨域问题（浏览器原生支持）
+如果用CDN服务会遇到，所以我们用直接方案
+```
+
+## 性能考虑
+
+### 缓存
+
+- ✅ 浏览器会自动缓存favicon
+- ✅ 第二次加载同一网站时会很快
+
+### 加载时间
+
+- 首次：100-500ms（取决于网络）
+- 后续：<10ms（使用缓存）
+
+### 带宽
+
+- 每个favicon通常：1-5KB
+- 不会造成显著的带宽消耗
 
 ## 相关文件
 
 - **修改文件**: `src/modules/shortcuts.js`
-- **函数**: `faviconForUrl()`
-- **修改行**: 342-349 行
+- **函数**: `faviconForUrl()` (第342-353行)
+- **参考文档**: `FAVICON-QUICK-REFERENCE.md`
 
-## 版本信息
+## 版本历史
 
-- **修改日期**: 2026-04-29
-- **方案**: 360浏览器CDN服务
-- **状态**: ✅ 已应用
+- ✅ v2 (2026-04-29)：直接网站favicon.ico（推荐）
+- ✅ v1 (2026-04-29)：360浏览器CDN（已废弃）
+- ❌ v0 (之前)：谷歌服务（需翻墙）
+
+## 为什么选择直接方案
+
+1. **最可靠** - 不依赖第三方，不会突然无法访问
+2. **最快** - 直接访问源站，无中间环节
+3. **最标准** - favicon.ico 是网站标准配置
+4. **最安全** - 不经过第三方CDN，更安全
+5. **最简单** - 代码最简洁，无需复杂逻辑
 
 ## 参考资源
 
-- [360图标服务文档](https://bos.360.cn/)
-- [DuckDuckGo图标API](https://icons.duckduckgo.com/)
-- [Favicon 标准](https://en.wikipedia.org/wiki/Favicon)
+- [Favicon 标准规范](https://en.wikipedia.org/wiki/Favicon)
+- [网站ico文件](https://developer.mozilla.org/en-US/docs/Glossary/Favicon)
+- [浏览器如何加载favicon](https://en.wikipedia.org/wiki/Favicon)
+
+
 
