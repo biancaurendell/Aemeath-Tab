@@ -1,4 +1,5 @@
 node_modules/**
+lemon-new-tab/**
 .git/**
 .github/**
 wrangler.toml
@@ -7,4 +8,5 @@ wrangler.jsonc
 artifacts/**
 dist/**
 build/**
+
 
