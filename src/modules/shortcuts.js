@@ -15,6 +15,11 @@ export let activeShortcutId = "";
 export let selectedShortcutColor = shortcutColors[0];
 export let uploadedIcon = "";
 
+// Temporary UI state used when showing the Add button via context-menu on other icons
+let addWasHiddenBeforeContext = false;
+let addOriginalNextSibling = null;
+let addTemporaryShownForId = "";
+
 // DOM Elements
 let shortcutRow, addShortcutButton, shortcutPager, shortcutMenu, shortcutDialog, shortcutForm;
 let shortcutUrl, shortcutName, shortcutIconText, shortcutKey, colorSwatches, textIconPreview, uploadIconPreview;
@@ -65,7 +70,9 @@ function updateRangeVisual(input) {
   const min = Number(input.min) || 0;
   const max = Number(input.max) || 100;
   const value = Number(input.value) || 0;
-  input.style.setProperty("--progress", `${((value - min) / (max - min)) * 100}%`);
+  const progress = max === min ? 0 : ((value - min) / (max - min)) * 100;
+  // Use the same CSS variable name as the main app (`--range-progress`) so range visuals show correctly
+  input.style.setProperty("--range-progress", `${Math.min(100, Math.max(0, progress))}%`);
 }
 
 export function syncShortcutLayoutControls() {
@@ -179,7 +186,25 @@ export function renderShortcuts() {
   }
 
   const shouldShowAdd = !shortcutLayout.paging || shortcutPage === totalPages - 1;
-  addShortcutButton.hidden = !shouldShowAdd;
+  // Respect per-user single-Add-button hide preference saved under pixelNewTab.addButtonHidden.
+  // If user hid the Add button via context menu, keep it hidden across reloads.
+  const addButtonHidden = (() => {
+    try {
+      return !isMobileViewport() && localStorage.getItem("pixelNewTab.addButtonHidden") === "true";
+    } catch {
+      return false;
+    }
+  })();
+
+  if (shortcuts.length === 0) {
+    // When there are no shortcuts, keep the Add button visible unless user explicitly hid it.
+    if (addShortcutButton) addShortcutButton.hidden = !!addButtonHidden;
+    // Ensure the shortcuts row is visible so user can still restore the Add button by right-clicking the row background.
+    try { document.documentElement.classList.remove("prefers-shortcuts-hidden"); } catch {}
+    if (shortcutRow) shortcutRow.classList.remove("is-hidden");
+  } else {
+    if (addShortcutButton) addShortcutButton.hidden = addButtonHidden ? true : !shouldShowAdd;
+  }
   renderShortcutPager();
   shortcutPager.classList.toggle("is-visible", !shortcutRow.classList.contains("is-hidden") && shortcutLayout.paging && totalPages > 1);
 }
@@ -222,6 +247,58 @@ function renderShortcutPager() {
   }
 }
 
+// Helpers to control add-button visibility/position when user context-clicks other icons
+function toggleAddVisibility(visible) {
+  try {
+    localStorage.setItem(storageKeys.showAddShortcut, String(visible));
+  } catch {}
+  try {
+    syncConfigFromLegacyStorage();
+  } catch {}
+  try {
+    document.documentElement.classList.toggle("prefers-shortcuts-hidden", !visible);
+    if (shortcutRow) shortcutRow.classList.toggle("is-hidden", !visible);
+    const settingsCheckbox = document.querySelector("#addShortcutToggle");
+    if (settingsCheckbox) settingsCheckbox.checked = visible;
+  } catch {}
+  // Re-render so pager/add placement is correct
+  try { renderShortcuts(); } catch {}
+}
+
+function moveAddButtonAfter(targetLink) {
+  if (!addShortcutButton || !shortcutRow || !targetLink) return;
+  // Save original state so we can restore later
+  addWasHiddenBeforeContext = addShortcutButton.hidden;
+  addOriginalNextSibling = addShortcutButton.nextSibling;
+  addTemporaryShownForId = targetLink.dataset.shortcutId || "";
+  // Make visible and move next to target
+  addShortcutButton.hidden = false;
+  try {
+    shortcutRow.insertBefore(addShortcutButton, targetLink.nextSibling);
+  } catch {}
+}
+
+function restoreAddButtonPosition() {
+  if (!addShortcutButton || !shortcutRow || !addTemporaryShownForId) return;
+  // If it was hidden before showing temporarily, hide and try to restore original slot
+  if (addWasHiddenBeforeContext) {
+    try {
+      if (addOriginalNextSibling && addOriginalNextSibling.parentNode === shortcutRow) {
+        shortcutRow.insertBefore(addShortcutButton, addOriginalNextSibling);
+      } else {
+        shortcutRow.append(addShortcutButton);
+      }
+    } catch {}
+    addShortcutButton.hidden = true;
+  } else {
+    // If it was not hidden before, let renderShortcuts decide placement next time
+    try { shortcutRow.append(addShortcutButton); } catch {}
+  }
+  addTemporaryShownForId = "";
+  addOriginalNextSibling = null;
+  addWasHiddenBeforeContext = false;
+}
+
 export function openShortcutMenu(event, shortcutId) {
   activeShortcutId = shortcutId;
   shortcutMenu.classList.add("is-open");
@@ -233,6 +310,14 @@ export function openShortcutMenu(event, shortcutId) {
   const y = Math.min(event.clientY, window.innerHeight - menuHeight - 12);
   shortcutMenu.style.left = `${Math.max(12, x)}px`;
   shortcutMenu.style.top = `${Math.max(12, y)}px`;
+
+  // If the Add button is currently hidden, temporarily show it next to the shortcut
+  try {
+    if (addShortcutButton && addShortcutButton.hidden) {
+      const target = shortcutRow?.querySelector(`[data-shortcut-id="${shortcutId}"]`);
+      if (target) moveAddButtonAfter(target);
+    }
+  } catch {}
 }
 
 export function closeShortcutMenu() {
@@ -240,6 +325,9 @@ export function closeShortcutMenu() {
   shortcutMenu.classList.remove("is-open");
   shortcutMenu.setAttribute("aria-hidden", "true");
   activeShortcutId = "";
+
+  // If we showed the Add button temporarily for context, restore previous state
+  try { restoreAddButtonPosition(); } catch {}
 }
 
 export function buildColorSwatches() {
@@ -430,6 +518,12 @@ export function initShortcuts(domNodes) {
   readShortcutLayout();
   syncShortcutLayoutControls();
 
+  // Respect per-user hidden state for the single Add button (does not hide the whole row)
+  try {
+    const addButtonHidden = localStorage.getItem("pixelNewTab.addButtonHidden") === "true";
+    if (addShortcutButton) addShortcutButton.hidden = !!addButtonHidden;
+  } catch {}
+
   if (domNodes.shortcutPagingToggle) {
     domNodes.shortcutPagingToggle.addEventListener("change", () => {
       handleShortcutLayoutChange("paging", domNodes.shortcutPagingToggle.checked);
@@ -456,6 +550,23 @@ export function initShortcuts(domNodes) {
       shortcutDialog.showModal();
       shortcutName.focus();
     });
+    // Right-click the Add button to hide this Add button only (persisted per-user).
+    addShortcutButton.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+      if (isMobileViewport()) return;
+      try { localStorage.setItem("pixelNewTab.addButtonHidden", "true"); } catch {}
+      addShortcutButton.hidden = true;
+    });
+    // Allow right-click on the shortcut row background to restore the Add button
+    try {
+      shortcutRow.addEventListener("contextmenu", (event) => {
+        // only handle clicks directly on the row (not on child shortcuts)
+        if (event.target !== shortcutRow) return;
+        event.preventDefault();
+        try { localStorage.removeItem("pixelNewTab.addButtonHidden"); } catch {}
+        if (addShortcutButton) addShortcutButton.hidden = false;
+      });
+    } catch {}
   }
 
   if (domNodes.cancelShortcutButton) {

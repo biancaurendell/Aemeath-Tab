@@ -654,14 +654,19 @@ async function loadSettings() {
   selectedEngine = savedEngine && engines[savedEngine] ? savedEngine : "google";
 
   const showClock = savedClock !== "false";
-  const showAddShortcut = savedAddShortcut ? savedAddShortcut !== "false" : false;
+  const showAddShortcut = savedAddShortcut ? savedAddShortcut !== "false" : true;
   const showClouds = savedClouds !== "false";
   const showBottomSpectrum = savedBottomSpectrum !== "false";
+  const savedShowMusic = localStorage.getItem(storageKeys.showMusic);
+  const showMusic = savedShowMusic === null ? false : savedShowMusic === "true";
   const openSearchInNewTab = savedSearchNewTab ? savedSearchNewTab === "true" : true;
   clockToggle.checked = showClock;
   addShortcutToggle.checked = showAddShortcut;
   cloudToggle.checked = showClouds;
   bottomSpectrumToggle.checked = showBottomSpectrum;
+  // Music visibility preference
+  if (musicPlayer) musicPlayer.classList.toggle("is-hidden", !showMusic);
+  document.documentElement.classList.toggle("prefers-music-hidden", !showMusic);
   searchNewTabToggle.checked = openSearchInNewTab;
   document.documentElement.classList.toggle("prefers-clock-hidden", !showClock);
   document.documentElement.classList.toggle("prefers-shortcuts-hidden", !showAddShortcut);
@@ -686,7 +691,7 @@ async function loadSettings() {
 
   if (savedMusicUrl) {
     musicUrl.value = savedMusicUrl;
-    applyMusicSource(savedMusicUrl);
+    applyMusicSource(savedMusicUrl, { revealPlayer: showMusic });
   }
 
   metingApiUrl.value = savedMetingApiUrl;
@@ -744,7 +749,7 @@ async function loadSettings() {
   buildMusicNotes(musicNoteLayer, 12, 8, 92);
   buildMusicNotes(bottomNotes, 28, 8, 104);
   updateMusicProgress();
-  loadMetingPlaylist(savedMetingApiUrl, { silent: true });
+  loadMetingPlaylist(savedMetingApiUrl, { silent: true, revealPlayer: showMusic });
   initPet();
   initEffects({
     musicCheckCallback: isMusicActivelyPlaying
@@ -756,21 +761,32 @@ async function loadSettings() {
 function applyAppearance(settings) {
   const fallback = getDefaultAppearance();
   const rootStyle = document.documentElement.style;
-  rootStyle.setProperty("--shortcut-opacity", String(settings.iconOpacity / 100));
-  rootStyle.setProperty("--shortcut-scale", String(settings.iconScale / 100));
-  rootStyle.setProperty("--clock-opacity", String(settings.timeOpacity / 100));
-  rootStyle.setProperty("--clock-scale", String(settings.timeScale / 100));
-  rootStyle.setProperty("--clock-x", `${settings.timeX}vw`);
-  rootStyle.setProperty("--clock-y", `${settings.timeY * 0.45}vh`);
-  rootStyle.setProperty("--search-opacity", String(settings.searchOpacity / 100));
-  rootStyle.setProperty("--search-scale", String(settings.searchScale / 100));
-  rootStyle.setProperty("--dust-opacity", String((settings.dustOverlayStrength / 100) * 0.88));
-  rootStyle.setProperty("--page-bg-blur", `${settings.backgroundBlur ?? fallback.backgroundBlur}px`);
-  rootStyle.setProperty("--page-bg-scale", String(1.018 + ((settings.backgroundBlur ?? fallback.backgroundBlur) / 360)));
-  rootStyle.setProperty("--search-x", `${settings.searchX}vw`);
-  rootStyle.setProperty("--search-y", `${settings.searchY * 0.45}vh`);
+
+  // On mobile, prefer mobile-friendly positions for clock/search while keeping other user settings.
+  const effective = { ...settings };
+  if (isMobileViewport()) {
+    effective.timeX = mobileDefaultAppearance.timeX;
+    effective.timeY = mobileDefaultAppearance.timeY;
+    effective.searchX = mobileDefaultAppearance.searchX;
+    effective.searchY = mobileDefaultAppearance.searchY;
+  }
+
+  rootStyle.setProperty("--shortcut-opacity", String(effective.iconOpacity / 100));
+  rootStyle.setProperty("--shortcut-scale", String(effective.iconScale / 100));
+  rootStyle.setProperty("--clock-opacity", String(effective.timeOpacity / 100));
+  rootStyle.setProperty("--clock-scale", String(effective.timeScale / 100));
+  rootStyle.setProperty("--clock-x", `${effective.timeX}vw`);
+  rootStyle.setProperty("--clock-y", `${effective.timeY * 0.45}vh`);
+  rootStyle.setProperty("--search-opacity", String(effective.searchOpacity / 100));
+  rootStyle.setProperty("--search-scale", String(effective.searchScale / 100));
+  rootStyle.setProperty("--dust-opacity", String((effective.dustOverlayStrength / 100) * 0.88));
+  rootStyle.setProperty("--page-bg-blur", `${effective.backgroundBlur ?? fallback.backgroundBlur}px`);
+  rootStyle.setProperty("--page-bg-scale", String(1.018 + ((effective.backgroundBlur ?? fallback.backgroundBlur) / 360)));
+  rootStyle.setProperty("--search-x", `${effective.searchX}vw`);
+  rootStyle.setProperty("--search-y", `${effective.searchY * 0.45}vh`);
 
   for (const [key, input] of Object.entries(appearanceInputs)) {
+    // Keep settings panel inputs in sync with the stored settings (not overridden mobile-only preview)
     input.value = settings[key] ?? fallback[key];
     updateRangeVisual(input);
   }
@@ -1376,6 +1392,12 @@ document.addEventListener("keydown", handleDocumentKeydownForShortcuts);
 window.addEventListener("resize", () => {
   handlePetResize();
   renderShortcuts();
+  // Re-apply appearance to honor mobile/desktop overrides when crossing breakpoints
+  try {
+    const savedAppearanceRaw = localStorage.getItem(storageKeys.appearance);
+    const appearance = savedAppearanceRaw ? { ...getDefaultAppearance(), ...JSON.parse(savedAppearanceRaw) } : getDefaultAppearance();
+    applyAppearance(appearance);
+  } catch {}
 });
 
 document.addEventListener("visibilitychange", () => {

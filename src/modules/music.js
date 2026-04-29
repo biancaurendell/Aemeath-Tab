@@ -42,7 +42,20 @@ export function initMusic(nodes, options = {}) {
 
   if (domNodes.musicCollapseButton) {
     domNodes.musicCollapseButton.addEventListener("click", () => {
-      domNodes.musicPlayer.classList.toggle("is-collapsed");
+      try {
+        if (!domNodes.musicPlayer) return;
+        const nowHidden = domNodes.musicPlayer.classList.toggle("is-hidden");
+        // store showMusic = true when visible, false when hidden
+        try { localStorage.setItem(storageKeys.showMusic, nowHidden ? "false" : "true"); } catch {}
+        try { syncConfigFromLegacyStorage(); } catch {}
+        // reflect global class used elsewhere
+        try {
+          if (nowHidden) document.documentElement.classList.add("prefers-music-hidden");
+          else document.documentElement.classList.remove("prefers-music-hidden");
+        } catch {}
+      } catch (e) {
+        // defensive: don't throw
+      }
     });
   }
 
@@ -395,7 +408,7 @@ export function syncLyricCursorToCurrentTime() {
   lastFloatingLyricAt = domNodes.musicAudio.currentTime;
 }
 
-export function applyMusicSource(value) {
+export function applyMusicSource(value, { revealPlayer = true } = {}) {
   const url = value.trim();
   if (!url) return;
   if (domNodes.musicAudio) {
@@ -407,8 +420,13 @@ export function applyMusicSource(value) {
   clearDynamicLyrics();
   updateMusicProgress();
   renderPlaylist();
-  localStorage.setItem(storageKeys.musicUrl, url);
-  syncConfigFromLegacyStorage();
+  try { localStorage.setItem(storageKeys.musicUrl, url); } catch {}
+  if (revealPlayer) {
+    try { localStorage.setItem(storageKeys.showMusic, "true"); } catch {}
+    try { syncConfigFromLegacyStorage(); } catch {}
+    try { if (domNodes.musicPlayer) domNodes.musicPlayer.classList.remove("is-hidden"); } catch {}
+    try { document.documentElement.classList.remove("prefers-music-hidden"); } catch {}
+  }
   if (domNodes.trackSubtitle) domNodes.trackSubtitle.textContent = "Direct Audio";
   if (domNodes.trackTitle) {
     try {
@@ -434,8 +452,11 @@ export function applyLocalMusicFile(file) {
   clearDynamicLyrics();
   renderPlaylist();
   updateMusicProgress();
-  localStorage.removeItem(storageKeys.musicUrl);
-  syncConfigFromLegacyStorage();
+  try { localStorage.removeItem(storageKeys.musicUrl); } catch {}
+  try { localStorage.setItem(storageKeys.showMusic, "true"); } catch {}
+  try { syncConfigFromLegacyStorage(); } catch {}
+  try { if (domNodes.musicPlayer) domNodes.musicPlayer.classList.remove("is-hidden"); } catch {}
+  try { document.documentElement.classList.remove("prefers-music-hidden"); } catch {}
   if (domNodes.musicUrl) domNodes.musicUrl.value = "";
 }
 
@@ -507,7 +528,7 @@ function renderPlaylist() {
   });
 }
 
-export async function loadMetingPlaylist(url, { silent = false } = {}) {
+export async function loadMetingPlaylist(url, { silent = false, revealPlayer = true } = {}) {
   const apiUrl = (url || "").trim();
   if (!apiUrl) return;
 
@@ -536,7 +557,7 @@ export async function loadMetingPlaylist(url, { silent = false } = {}) {
     playlistTracks = tracks;
     activeTrackIndex = 0;
     renderPlaylist();
-    selectPlaylistTrack(0, false);
+    selectPlaylistTrack(0, false, { revealPlayer });
   } catch (error) {
     console.warn("Meting playlist load failed.", error);
     if (domNodes.trackSubtitle) domNodes.trackSubtitle.textContent = "Playlist unavailable";
@@ -583,7 +604,7 @@ async function cleanupMusicCoverAsset(trackId) {
   await deleteAsset(assetKey);
 }
 
-async function selectPlaylistTrack(index, shouldPlay = false) {
+async function selectPlaylistTrack(index, shouldPlay = false, { revealPlayer = true } = {}) {
   const track = playlistTracks[index];
   if (!track) return;
 
@@ -598,7 +619,12 @@ async function selectPlaylistTrack(index, shouldPlay = false) {
   clearDynamicLyrics();
   const requestId = ++lyricRequestId;
   localStorage.removeItem(storageKeys.musicUrl);
-  syncConfigFromLegacyStorage();
+  if (revealPlayer) {
+    try { localStorage.setItem(storageKeys.showMusic, "true"); } catch {}
+    try { syncConfigFromLegacyStorage(); } catch {}
+    try { if (domNodes.musicPlayer) domNodes.musicPlayer.classList.remove("is-hidden"); } catch {}
+    try { document.documentElement.classList.remove("prefers-music-hidden"); } catch {}
+  }
   if (domNodes.musicUrl) domNodes.musicUrl.value = "";
   renderPlaylist();
   updateMusicProgress();

@@ -6,6 +6,7 @@ export const storageKeys = {
   showClock: "pixelNewTab.showClock",
   showAddShortcut: "pixelNewTab.showAddShortcut",
   showClouds: "pixelNewTab.showClouds",
+  showMusic: "pixelNewTab.showMusic",
   showBottomSpectrum: "pixelNewTab.showBottomSpectrum",
   openSearchInNewTab: "pixelNewTab.openSearchInNewTab",
   searchSuggestions: "pixelNewTab.search.suggestions",
@@ -31,24 +32,24 @@ export const storageKeys = {
 export const defaultMetingApiUrl = "https://api.injahow.cn/meting/?server=netease&type=playlist&id=17929070065";
 
 export const defaultAppearance = {
-    iconOpacity: 100,
+    iconOpacity: 68,
     iconScale: 94,
     timeOpacity: 66,
     timeScale: 85,
     timeX: -26,
     timeY: -38,
-    searchOpacity: 61,
+    searchOpacity: 58,
     searchScale: 100,
     dustOverlayStrength: 31,
     backgroundBlur: 6,
-    searchX: -21,
-    searchY: -34
+    searchX: -1,
+    searchY: -4
   };
 
 export const mobileDefaultAppearance = {
   ...defaultAppearance,
   timeOpacity: 78,
-  timeScale: 78,
+  timeScale: 94,
   timeX: 0,
   timeY: -18,
   searchOpacity: 76,
@@ -76,9 +77,10 @@ export const defaultShortcuts = [];
     version: currentConfigVersion,
     display: {
       showClock: true,
-      showShortcuts: false,
+      showShortcuts: true,
       showClouds: true,
-      showBottomSpectrum: true
+      showBottomSpectrum: true,
+      showMusic: false
     },
     search: {
       engine: "google",
@@ -236,9 +238,10 @@ export function writeConfig(config) {
     return {
       display: {
         showClock: parseBoolean(localStorage.getItem(storageKeys.showClock), true),
-        showShortcuts: parseBoolean(localStorage.getItem(storageKeys.showAddShortcut), false),
+        showShortcuts: parseBoolean(localStorage.getItem(storageKeys.showAddShortcut), true),
         showClouds: parseBoolean(localStorage.getItem(storageKeys.showClouds), true),
-        showBottomSpectrum: parseBoolean(localStorage.getItem(storageKeys.showBottomSpectrum), true)
+        showBottomSpectrum: parseBoolean(localStorage.getItem(storageKeys.showBottomSpectrum), true),
+        showMusic: parseBoolean(localStorage.getItem(storageKeys.showMusic), false)
       },
       search: {
         engine: localStorage.getItem(storageKeys.engine) || "google",
@@ -319,6 +322,7 @@ export function migrateLegacyConfig() {
     writeIfNeeded(storageKeys.showAddShortcut, String(config.display.showShortcuts));
     writeIfNeeded(storageKeys.showClouds, String(config.display.showClouds));
     writeIfNeeded(storageKeys.showBottomSpectrum, String(config.display.showBottomSpectrum));
+    writeIfNeeded(storageKeys.showMusic, String(config.display.showMusic));
     writeIfNeeded(storageKeys.background, config.background.value);
     writeIfNeeded(storageKeys.shortcuts, config.shortcuts, writeStorageJson);
     writeIfNeeded(storageKeys.shortcutRows, String(config.shortcutLayout.rows));
@@ -384,5 +388,3 @@ export async function importConfigSnapshot(snapshot) {
     syncConfigFromLegacyStorage();
   }
 }
-
-

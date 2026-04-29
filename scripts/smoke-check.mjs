@@ -105,7 +105,13 @@ try {
   await page.click("#addShortcutButton");
   await page.fill("#shortcutUrl", "example.com");
   await page.fill("#shortcutName", "Example");
-  await page.fill("#shortcutIconText", "EX");
+  await page.evaluate(() => {
+    const iconText = document.querySelector("#shortcutIconText");
+    if (iconText) {
+      iconText.value = "EX";
+      iconText.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  });
   await page.click("#saveShortcutButton");
   await page.waitForSelector('.shortcut-link[data-shortcut-id]');
 

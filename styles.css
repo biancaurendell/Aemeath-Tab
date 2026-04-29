@@ -847,11 +847,17 @@ html.perf-low-power .bottom-notes i {
 }
 
 .shortcut-icon img {
-  width: 58%;
-  height: 58%;
-  object-fit: contain;
+  /* Ensure icon images fully cover the circular icon area.
+     Use cover + center to crop sensibly for favicons and uploaded images. */
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
   image-rendering: auto;
   filter: drop-shadow(0 2px 6px rgba(8, 6, 24, 0.42));
+  /* inherit the container's rounding so images remain circular */
+  border-radius: inherit;
 }
 
 .shortcut > span:last-child,
@@ -898,9 +904,24 @@ html.perf-low-power .bottom-notes i {
 }
 
 .add-shortcut .shortcut-icon {
-  color: rgba(230, 230, 255, 0.72);
+  border-color: rgba(255, 246, 255, 0.18);
+  color: rgba(244, 241, 255, 0.76);
   font-size: 34px;
-  background: rgba(74, 69, 116, 0.38);
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.16), transparent 42%),
+    rgba(74, 69, 116, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 5px 12px rgba(18, 12, 44, 0.18);
+}
+
+.add-shortcut:hover .shortcut-icon {
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.2), transparent 42%),
+    rgba(82, 76, 124, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 7px 16px rgba(18, 12, 44, 0.22);
 }
 
 .shortcut-menu {
@@ -947,7 +968,8 @@ html.perf-low-power .bottom-notes i {
   position: fixed;
   left: 0;
   top: 0;
-  z-index: 4;
+  /* Raise pet above clock and search layers so it can be dragged when overlapping them */
+  z-index: 21;
   display: grid;
   width: clamp(84px, 9vw, 128px);
   height: clamp(84px, 9vw, 128px);
@@ -1001,6 +1023,16 @@ html.perf-low-power .bottom-notes i {
   -webkit-backdrop-filter: blur(calc(var(--ui-glass-blur) + 6px)) saturate(1.34) brightness(1.06);
 }
 
+.music-player.is-hidden {
+  display: none !important;
+}
+
+/* Strong override to ensure initial preference (added early in <head>)
+   hides the player even if later rules set display. */
+html.prefers-music-hidden .music-player {
+  display: none !important;
+}
+
 .music-player.is-collapsed {
   transform: translateX(calc(100% + 36px));
 }
@@ -1014,7 +1046,7 @@ html.perf-low-power .bottom-notes i {
   position: fixed;
   right: 24px;
   bottom: 248px;
-  z-index: 7;
+  z-index: 22;
   display: grid;
   width: 46px;
   height: 46px;
@@ -1524,13 +1556,15 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   position: fixed;
   top: 22px;
   right: 24px;
-  z-index: 5;
+  z-index: 30;
 }
 
 .settings-dialog {
   position: fixed;
   inset: 0;
   width: 100vw;
+  min-width: 100vw;
+  max-width: none;
   height: 100svh;
   max-height: none;
   padding: 0;
@@ -1665,6 +1699,15 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   }
   to {
     transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes settingsMobileIn {
+  from {
+    opacity: 0.72;
+  }
+  to {
     opacity: 1;
   }
 }
@@ -2240,7 +2283,7 @@ body.is-music-playing .album-spectrum .spectrum-bar {
 
 @media (max-width: 680px) {
   body {
-    overflow: auto;
+    overflow: hidden;
   }
 
   .custom-background {
@@ -2249,20 +2292,20 @@ body.is-music-playing .album-spectrum .spectrum-bar {
 
   .new-tab {
     min-height: 100svh;
-    padding: 34px 18px 128px;
+    padding: max(24px, env(safe-area-inset-top)) 16px max(104px, env(safe-area-inset-bottom));
     place-items: start center;
   }
 
   .center-stage {
     width: min(100%, 420px);
     margin-inline: auto;
-    padding-top: 18svh;
-    gap: 18px;
+    padding-top: clamp(92px, 16svh, 148px);
+    gap: 16px;
     transform: none;
   }
 
   .clock-panel {
-    transform: translate3d(0, -2vh, 0) scale(min(var(--clock-scale), 0.86));
+    transform: translate3d(0, -1vh, 0) scale(min(var(--clock-scale), 0.96));
     transform-origin: center;
   }
 
@@ -2272,52 +2315,60 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   }
 
   .pixel-time {
-    font-size: clamp(54px, 20vw, 86px);
+    font-size: clamp(58px, 21vw, 92px);
   }
 
   .date {
-    font-size: 17px;
-    letter-spacing: 0.04em;
+    font-size: clamp(14px, 4.2vw, 17px);
+    letter-spacing: 0;
   }
 
   .search-bar {
-    --search-rest-width: min(82vw, 390px);
-    --search-active-width: min(90vw, 430px);
-    grid-template-columns: max-content minmax(0, 1fr) 46px;
+    --search-rest-width: min(calc(100vw - 32px), 390px);
+    --search-active-width: min(calc(100vw - 24px), 430px);
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
     width: var(--search-rest-width);
-    min-height: 50px;
+    min-height: 52px;
     margin-inline: auto;
-    transform: translate3d(0, 0, 0) scale(min(var(--search-scale), 0.94));
+    border-color: rgba(255, 246, 255, 0.3);
+    background: rgba(28, 22, 47, 0.62);
+    transform: translate3d(0, 0, 0) scale(min(var(--search-scale), 0.96));
+    backdrop-filter: blur(calc(var(--ui-glass-blur) + 8px)) saturate(1.32) brightness(1.08);
+    -webkit-backdrop-filter: blur(calc(var(--ui-glass-blur) + 8px)) saturate(1.32) brightness(1.08);
   }
 
   .engine-picker {
-    grid-column: auto;
-    grid-template-columns: 28px 26px;
-    gap: 4px;
+    display: grid;
+    place-items: center;
     height: 100%;
-    padding-left: 9px;
-    padding-right: 4px;
+    padding: 0;
   }
 
   .engine-button {
-    min-width: 26px;
-    width: 26px;
+    width: 38px;
+    height: 38px;
     padding: 0;
-    justify-content: center;
+    place-items: center;
   }
 
-  .engine-button span:first-child {
-    display: none;
+  .engine-dot {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
   }
 
   .engine-menu {
-    left: 0;
-    width: min(280px, calc(100vw - 48px));
+    left: 4px;
+    width: min(280px, calc(100vw - 40px));
+    border-radius: 18px;
   }
 
   .search-suggestions {
-    left: 8px;
-    right: 8px;
+    left: 6px;
+    right: 6px;
+    max-height: min(300px, 42svh);
+    border-radius: 18px;
   }
 
   .form-grid.with-action {
@@ -2334,8 +2385,16 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   }
 
   .search-bar input {
-    min-height: 48px;
-    padding-inline: 4px;
+    min-height: 50px;
+    padding-inline: 2px;
+    font-size: 14px;
+    text-align: left;
+  }
+
+  .search-submit {
+    width: 38px;
+    height: 38px;
+    font-size: 24px;
   }
 
   .custom-engine-grid {
@@ -2343,13 +2402,14 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   }
 
   .shortcut-row {
-    top: 46svh;
+    top: min(50svh, 438px);
     grid-template-columns: repeat(var(--shortcut-columns, 4), 64px);
-    grid-auto-rows: 88px;
-    gap: 18px 20px;
+    grid-auto-rows: 84px;
+    gap: 14px 16px;
     width: max-content;
-    max-width: 92vw;
+    max-width: calc(100vw - 24px);
     overflow-x: auto;
+    padding: 2px 8px 10px;
     scrollbar-width: none;
   }
 
@@ -2362,60 +2422,164 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   }
 
   .shortcut-icon {
-    width: 58px;
-    height: 58px;
+    width: 56px;
+    height: 56px;
+    font-size: 26px;
   }
 
   .pixel-ground {
-    height: 120px;
+    height: 104px;
   }
 
   .music-player {
-    right: 12px;
-    bottom: 12px;
-    width: min(280px, calc(100vw - 24px));
-    max-height: calc(100svh - 64px);
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    width: min(292px, calc(100vw - 24px));
+    max-height: calc(100svh - 56px);
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .music-collapse {
+    right: max(12px, env(safe-area-inset-right));
+    bottom: calc(max(12px, env(safe-area-inset-bottom)) + 182px);
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+  }
+
+  html.prefers-music-hidden .music-collapse {
+    bottom: max(12px, env(safe-area-inset-bottom));
   }
 
   .bottom-spectrum {
-    height: 86px;
+    height: 70px;
     padding: 14px 5vw 0;
   }
 
   .bottom-notes {
-    bottom: 18px;
-    height: 142px;
+    bottom: 12px;
+    height: 118px;
   }
 
   .range-line {
     grid-template-columns: 1fr;
   }
 
+  .settings-dialog {
+    animation: settingsMobileIn 140ms ease-out;
+  }
+
   .settings-card {
-    max-height: calc(100svh - 20px);
-    padding: 16px;
-    border-radius: 20px 0 0 20px;
+    width: 100vw;
+    height: 100svh;
+    max-height: none;
+    margin: 0;
+    gap: 12px;
+    padding: max(14px, env(safe-area-inset-top)) 14px max(18px, env(safe-area-inset-bottom));
+    border: 0;
+    border-radius: 0;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 18%),
+      rgba(28, 22, 48, 0.86);
+  }
+
+  .settings-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    min-height: 46px;
+    padding-bottom: 2px;
+  }
+
+  .settings-header h2 {
+    font-size: 20px;
   }
 
   .settings-layout {
     grid-template-columns: 1fr;
+    gap: 10px;
   }
 
   .settings-tabs {
-    position: static;
+    position: sticky;
+    top: 48px;
+    z-index: 2;
     display: flex;
     overflow-x: auto;
-    padding: 8px;
-    scrollbar-width: thin;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 14px;
+    scrollbar-width: none;
+  }
+
+  .settings-tabs::-webkit-scrollbar {
+    display: none;
   }
 
   .settings-tab {
     flex: 0 0 auto;
-    min-width: 72px;
+    min-width: 62px;
+    min-height: 34px;
+    padding: 0 11px;
     text-align: center;
+  }
+
+  .settings-section-title,
+  .setting-line,
+  .setting-block,
+  .setting-ranges {
+    border-radius: 12px;
+  }
+
+  .setting-line {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .setting-line small,
+  .setting-block small,
+  .settings-section-title small {
+    line-height: 1.45;
   }
 
   .settings-actions .text-button {
     flex-basis: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .settings-trigger {
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+  }
+
+  .center-stage {
+    padding-top: clamp(82px, 14svh, 128px);
+  }
+
+  .search-bar {
+    --search-rest-width: calc(100vw - 24px);
+    --search-active-width: calc(100vw - 18px);
+    grid-template-columns: 42px minmax(0, 1fr) 42px;
+  }
+
+  .search-bar input {
+    font-size: 13px;
+  }
+
+  .shortcut-row {
+    top: min(51svh, 408px);
+    grid-template-columns: repeat(var(--shortcut-columns, 4), 58px);
+    grid-auto-rows: 78px;
+    gap: 12px;
+  }
+
+  .shortcut-icon {
+    width: 52px;
+    height: 52px;
   }
 }

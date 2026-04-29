@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Ameath's Tab</title>
+    <title>Aemeath's Tab</title>
     <link rel="icon" type="image/jpeg" href="./assets/favicon.jpeg" />
     <link rel="apple-touch-icon" href="./assets/favicon.jpeg" />
     <link rel="preload" as="image" href="./assets/wallpapers/default-config.png" fetchpriority="high" />
@@ -12,23 +12,23 @@
       (() => {
         const root = document.documentElement;
         const desktopDefaults = {
-          iconOpacity: 100,
+          iconOpacity: 68,
           iconScale: 94,
           timeOpacity: 66,
           timeScale: 85,
           timeX: -26,
           timeY: -38,
-          searchOpacity: 61,
+          searchOpacity: 58,
           searchScale: 100,
           dustOverlayStrength: 31,
           backgroundBlur: 6,
-          searchX: -21,
-          searchY: -34
+          searchX: -1,
+          searchY: -4
         };
         const mobileDefaults = {
           ...desktopDefaults,
           timeOpacity: 78,
-          timeScale: 78,
+          timeScale: 94,
           timeX: 0,
           timeY: -18,
           searchOpacity: 76,
@@ -74,18 +74,22 @@
           const config = JSON.parse(localStorage.getItem("pixelNewTab.config") || "{}");
           const display = config.display && typeof config.display === "object" ? config.display : {};
           const showClock = localStorage.getItem("pixelNewTab.showClock") ?? String(display.showClock ?? true);
-          const showShortcuts = localStorage.getItem("pixelNewTab.showAddShortcut") ?? String(display.showShortcuts ?? false);
+          const showShortcuts = localStorage.getItem("pixelNewTab.showAddShortcut") ?? String(display.showShortcuts ?? true);
           const showClouds = localStorage.getItem("pixelNewTab.showClouds") ?? String(display.showClouds ?? true);
           const showBottomSpectrum = localStorage.getItem("pixelNewTab.showBottomSpectrum") ?? String(display.showBottomSpectrum ?? true);
+          const showMusic = localStorage.getItem("pixelNewTab.showMusic");
+          // Default: music hidden unless user previously enabled it (treat missing as hidden)
           if (showClock === "false") root.classList.add("prefers-clock-hidden");
           if (showShortcuts !== "true") root.classList.add("prefers-shortcuts-hidden");
           if (showClouds === "false") root.classList.add("prefers-clouds-hidden");
           if (showBottomSpectrum === "false") root.classList.add("prefers-bottom-spectrum-hidden");
+          if (showMusic !== "true") root.classList.add("prefers-music-hidden");
         } catch {
           if (localStorage.getItem("pixelNewTab.showClock") === "false") root.classList.add("prefers-clock-hidden");
-          if (localStorage.getItem("pixelNewTab.showAddShortcut") !== "true") root.classList.add("prefers-shortcuts-hidden");
+          if (localStorage.getItem("pixelNewTab.showAddShortcut") === "false") root.classList.add("prefers-shortcuts-hidden");
           if (localStorage.getItem("pixelNewTab.showClouds") === "false") root.classList.add("prefers-clouds-hidden");
           if (localStorage.getItem("pixelNewTab.showBottomSpectrum") === "false") root.classList.add("prefers-bottom-spectrum-hidden");
+          if (localStorage.getItem("pixelNewTab.showMusic") === "false") root.classList.add("prefers-music-hidden");
         }
       })();
     </script>
@@ -138,7 +142,7 @@
             </button>
             <div class="engine-menu" id="engineMenu" role="listbox" aria-label="选择搜索引擎"></div>
           </div>
-          <input id="searchInput" name="q" type="search" placeholder="输入搜索内容" autofocus />
+          <input id="searchInput" name="q" type="search" placeholder="飞行雪绒Ciallo～(∠・ω< )⌒★!" autofocus />
           <button class="search-submit" type="submit" aria-label="搜索">
             <span aria-hidden="true">⌕</span>
           </button>
@@ -471,7 +475,7 @@
             <section class="settings-panel" data-settings-panel="performance">
               <div class="settings-section-title">
                 <strong>性能</strong>
-                <small>像 lemon-new-tab 一样，把动效开销拆成可控开关</small>
+                  <small>把动效开销拆成可控开关</small>
               </div>
               <label class="setting-line">
                 <span>
@@ -483,7 +487,7 @@
               <label class="setting-line">
                 <span>
                   <strong>低功耗模式</strong>
-                  <small>暂停流星、小角色自动移动、点击爱心和动态歌词</small>
+                  <small>暂停流星、飞行雪绒自动移动、点击爱心和动态歌词</small>
                 </span>
                 <input id="perfLowPowerToggle" type="checkbox" role="switch" />
               </label>
@@ -502,11 +506,11 @@
                 <input id="perfClickEffectsToggle" type="checkbox" role="switch" checked />
               </label>
               <label class="setting-line">
-                <span>
-                  <strong>小角色自动移动</strong>
-                  <small>关闭后仍可拖拽和点击，但不会自己飞行</small>
-                </span>
-                <input id="perfPetMotionToggle" type="checkbox" role="switch" checked />
+                    <span>
+                      <strong>开关飞行雪绒</strong>
+                      <small>关闭后仍可拖拽和点击，但不会自己飞行</small>
+                    </span>
+                    <input id="perfPetMotionToggle" type="checkbox" role="switch" checked />
               </label>
               <label class="setting-line">
                 <span>
