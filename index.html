@@ -53,6 +53,15 @@
           root.style.setProperty("--search-x", `${settings.searchX}vw`);
           root.style.setProperty("--search-y", `${settings.searchY * 0.45}vh`);
           root.style.setProperty("--dust-opacity", String((settings.dustOverlayStrength / 100) * 0.88));
+
+          const uiInteractions = localStorage.getItem("pixelNewTab.ui.interactions") ?? String(config.ui?.interactions ?? true);
+          if (uiInteractions === "false") {
+            root.style.setProperty("--ui-duration-fast", "0ms");
+            root.style.setProperty("--ui-duration-mid", "0ms");
+            root.style.setProperty("--ui-hover-scale", "1");
+            root.style.setProperty("--ui-press-scale", "1");
+            root.style.setProperty("--ui-lift", "0px");
+          }
         } catch {
           root.style.setProperty("--dust-opacity", "0.2728");
         }
@@ -440,6 +449,13 @@
                 <strong>性能</strong>
                 <small>像 lemon-new-tab 一样，把动效开销拆成可控开关</small>
               </div>
+              <label class="setting-line">
+                <span>
+                  <strong>UI 交互动效</strong>
+                  <small>控制 hover、按压缩放、搜索聚焦高亮和玻璃过渡反馈</small>
+                </span>
+                <input id="uiInteractionsToggle" type="checkbox" role="switch" checked />
+              </label>
               <label class="setting-line">
                 <span>
                   <strong>低功耗模式</strong>

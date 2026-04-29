@@ -126,4 +126,22 @@ display image
 - [ ] 资产清理 UI（查看 / 删除 IndexedDB 旧资产）
 - [ ] 配置版本迁移机制（version 升级时自动处理）
 
+## 交互层迁移（续）
+
+日期：2026-04-29
+
+- `styles.css`：在不改主视觉的前提下，补充统一交互变量、hover/active 缩放、focus 高亮、局部毛玻璃与 reduced-motion 兼容。
+- `src/state/settings.js`：新增 `pixelNewTab.ui.interactions`，纳入 `pixelNewTab.config` 的 `ui.interactions`，支持新旧配置互写。
+- `index.html`：首屏预加载读取 `ui.interactions`，并在性能面板新增 `UI 交互动效` 开关。
+- `app.js`：补齐交互动效开关闭环（读取、应用、保存、事件绑定），统一通过 CSS 变量控制启停并清理按压态。
+- 验证：继续使用 `node --check` 校验脚本语法（`app.js`、`src/state/settings.js`）。
+
+## 动态歌词修复（标签页切换）
+
+日期：2026-04-29
+
+- `app.js`：后台标签页时暂停歌词浮层生成，避免回到页面后瞬时堆积大量歌词标签。
+- `app.js`：在 `visibilitychange` 隐藏/恢复时清空浮层并同步歌词游标到当前播放时间，避免补刷历史歌词。
+- `app.js`：新增歌词文本净化，移除 `[]` / `<>` 时间戳前缀，动态歌词仅显示正文。
+
 

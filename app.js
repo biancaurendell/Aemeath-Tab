@@ -84,6 +84,7 @@ const perfMeteorsToggle = document.querySelector("#perfMeteorsToggle");
 const perfClickEffectsToggle = document.querySelector("#perfClickEffectsToggle");
 const perfPetMotionToggle = document.querySelector("#perfPetMotionToggle");
 const perfLyricsToggle = document.querySelector("#perfLyricsToggle");
+const uiInteractionsToggle = document.querySelector("#uiInteractionsToggle");
 const backgroundFile = document.querySelector("#backgroundFile");
 const backgroundUrl = document.querySelector("#backgroundUrl");
 const wallpaperGrid = document.querySelector("#wallpaperGrid");
@@ -222,6 +223,9 @@ let performanceSettings = {
   clickEffects: true,
   petMotion: true,
   lyrics: true
+};
+let uiSettings = {
+  interactions: true
 };
 const backgroundAssetKey = assetKeys.backgroundOriginal;
 const wallpaperDirectory = "./assets/wallpapers/";
@@ -527,6 +531,70 @@ function savePerformanceSettings() {
   syncConfigFromLegacyStorage();
 }
 
+function readUiSettings() {
+  return {
+    interactions: readBoolStorage(storageKeys.uiInteractions, true)
+  };
+}
+
+function saveUiSettings() {
+  localStorage.setItem(storageKeys.uiInteractions, String(uiSettings.interactions));
+  syncConfigFromLegacyStorage();
+}
+
+function applyUiSettings() {
+  const root = document.documentElement;
+  const enabled = uiSettings.interactions;
+  root.classList.toggle("ui-interactions-enabled", enabled);
+  root.style.setProperty("--ui-duration-fast", enabled ? "140ms" : "0ms");
+  root.style.setProperty("--ui-duration-mid", enabled ? "220ms" : "0ms");
+  root.style.setProperty("--ui-hover-scale", enabled ? "1.015" : "1");
+  root.style.setProperty("--ui-press-scale", enabled ? "0.97" : "1");
+  root.style.setProperty("--ui-lift", enabled ? "-2px" : "0px");
+  if (!enabled) {
+    for (const item of document.querySelectorAll(".is-pressing")) {
+      item.classList.remove("is-pressing");
+    }
+  }
+}
+
+function initializeInteractionFeedback() {
+  const selector = [
+    ".icon-button",
+    ".text-button",
+    ".dark-button",
+    ".round-close",
+    ".search-submit",
+    ".engine-button",
+    ".engine-option",
+    ".suggestion-item",
+    ".shortcut",
+    ".shortcut-page-button",
+    ".wallpaper-option",
+    ".playlist-track",
+    ".music-controls button",
+    ".music-collapse",
+    ".settings-tab"
+  ].join(",");
+
+  document.addEventListener("pointerdown", (event) => {
+    if (!uiSettings.interactions) return;
+    const target = event.target.closest(selector);
+    if (!target || target.classList.contains("pet-sprite")) return;
+    target.classList.add("is-pressing");
+  }, true);
+
+  const clearPressState = () => {
+    for (const item of document.querySelectorAll(".is-pressing")) {
+      item.classList.remove("is-pressing");
+    }
+  };
+
+  document.addEventListener("pointerup", clearPressState, true);
+  document.addEventListener("pointercancel", clearPressState, true);
+  document.addEventListener("dragstart", clearPressState, true);
+}
+
 function syncPerformanceToggles() {
   perfLowPowerToggle.checked = performanceSettings.lowPower;
   perfMeteorsToggle.checked = performanceSettings.meteors;
@@ -594,7 +662,10 @@ async function loadSettings() {
   shortcutLayout = readShortcutLayout();
   syncShortcutLayoutControls();
   performanceSettings = readPerformanceSettings();
+  uiSettings = readUiSettings();
+  if (uiInteractionsToggle) uiInteractionsToggle.checked = uiSettings.interactions;
   syncPerformanceToggles();
+  applyUiSettings();
   selectedEngine = savedEngine && engines[savedEngine] ? savedEngine : "google";
   shortcuts = savedShortcuts ? JSON.parse(savedShortcuts) : defaultShortcuts;
 
@@ -884,12 +955,19 @@ function parseLyricTime(minutes, seconds) {
   return Number(minutes) * 60 + Number(seconds);
 }
 
+function stripLyricTimestamps(value) {
+  return String(value || "")
+    .replace(/\[(?:\d{1,2}:)?\d{1,2}(?:\.\d{1,3})?]/g, "")
+    .replace(/<(?:\d{1,2}:)?\d{1,2}(?:\.\d{1,3})?>/g, "")
+    .trim();
+}
+
 function parseLrc(text) {
   const metadataPrefixes = ["\u4f5c\u8bcd", "\u4f5c\u66f2", "\u7f16\u66f2", "\u5236\u4f5c\u4eba", "\u6df7\u97f3", "\u6bcd\u5e26", "\u5f55\u97f3", "OP", "SP", "\u53d1\u884c"];
   return String(text || "")
     .split(/\r?\n/)
     .flatMap((line) => {
-      const content = line.replace(/\[[^]]+]/g, "").trim();
+      const content = stripLyricTimestamps(line.replace(/\[[^\]]+]/g, ""));
       if (!content || metadataPrefixes.some((prefix) => content.startsWith(prefix))) return [];
       const times = [...line.matchAll(/\[(\d{1,2}):(\d{2}(?:\.\d{1,3})?)]/g)];
       return times.map((match) => ({ time: parseLyricTime(match[1], match[2]), text: content }));
@@ -930,13 +1008,14 @@ async function loadTrackLyrics(track, requestId) {
 }
 
 function spawnFloatingLyric(text) {
-  if (!text || isMobileBackgroundPage()) return;
+  if (!text || document.hidden || isMobileBackgroundPage()) return;
   const maxLyrics = isMobileViewport() ? 4 : 8;
   while (floatingLyrics.children.length >= maxLyrics) {
     floatingLyrics.firstElementChild?.remove();
   }
   const lyric = document.createElement("span");
-  lyric.textContent = text;
+  lyric.textContent = stripLyricTimestamps(text);
+  if (!lyric.textContent) return;
   lyric.style.setProperty("--lyric-x", `${10 + Math.random() * 80}vw`);
   lyric.style.setProperty("--lyric-y", `${12 + Math.random() * 58}vh`);
   lyric.style.setProperty("--lyric-size", `${18 + Math.random() * 18}px`);
@@ -948,6 +1027,7 @@ function spawnFloatingLyric(text) {
 
 function updateDynamicLyric(currentTime) {
   if (!areLyricsEnabled()) return;
+  if (document.hidden) return;
   if (musicAudio.paused || !activeLyrics.length || !Number.isFinite(currentTime)) return;
 
   let nextIndex = Math.max(0, activeLyricIndex);
@@ -972,6 +1052,28 @@ function updateDynamicLyric(currentTime) {
       spawnFloatingLyric(activeLyrics[activeLyricIndex]?.text || activeLyrics[nextIndex].text);
     }
   }
+}
+
+function clearFloatingLyricNodes() {
+  floatingLyrics.innerHTML = "";
+}
+
+function syncLyricCursorToCurrentTime() {
+  if (!activeLyrics.length || !Number.isFinite(musicAudio.currentTime)) {
+    activeLyricIndex = -1;
+    lastFloatingLyricAt = 0;
+    return;
+  }
+  let index = -1;
+  for (let i = 0; i < activeLyrics.length; i += 1) {
+    if (musicAudio.currentTime >= activeLyrics[i].time) {
+      index = i;
+    } else {
+      break;
+    }
+  }
+  activeLyricIndex = index;
+  lastFloatingLyricAt = musicAudio.currentTime;
 }
 
 function applyMusicSource(value) {
@@ -2360,6 +2462,14 @@ perfLyricsToggle.addEventListener("change", () => {
   updatePerformanceSetting("lyrics", perfLyricsToggle.checked);
 });
 
+if (uiInteractionsToggle) {
+  uiInteractionsToggle.addEventListener("change", () => {
+    uiSettings.interactions = uiInteractionsToggle.checked;
+    saveUiSettings();
+    applyUiSettings();
+  });
+}
+
 addShortcutButton.addEventListener("click", () => {
   resetShortcutForm();
   shortcutDialog.showModal();
@@ -2652,9 +2762,13 @@ window.addEventListener("resize", () => {
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
     stopMeteorAnimation();
-    if (isMobileViewport()) floatingLyrics.innerHTML = "";
+    clearFloatingLyricNodes();
+    syncLyricCursorToCurrentTime();
     return;
   }
+
+  clearFloatingLyricNodes();
+  syncLyricCursorToCurrentTime();
 
   if (isMusicActivelyPlaying()) {
     updateMusicProgress();
@@ -2664,7 +2778,10 @@ document.addEventListener("visibilitychange", () => {
 });
 
 performanceSettings = readPerformanceSettings();
+uiSettings = readUiSettings();
 syncPerformanceToggles();
+applyUiSettings();
+initializeInteractionFeedback();
 loadSettings();
 updateClock();
 setInterval(updateClock, 1000);

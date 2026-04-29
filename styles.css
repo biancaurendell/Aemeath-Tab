@@ -19,6 +19,13 @@
   --shortcut-opacity: 1;
   --shortcut-scale: 1;
   --dust-opacity: 0.88;
+  --ui-ease: cubic-bezier(0.2, 0.75, 0.3, 1);
+  --ui-duration-fast: 140ms;
+  --ui-duration-mid: 220ms;
+  --ui-hover-scale: 1.015;
+  --ui-press-scale: 0.97;
+  --ui-lift: -2px;
+  --ui-glass-blur: 12px;
 }
 
 * {
@@ -177,8 +184,15 @@ button {
   opacity: var(--clock-opacity);
   text-align: center;
   transform: translate3d(var(--clock-x), var(--clock-y), 0) scale(var(--clock-scale));
-  transition: opacity 180ms ease, transform 180ms ease;
+  transition:
+    opacity var(--ui-duration-fast) ease,
+    transform var(--ui-duration-mid) var(--ui-ease),
+    filter var(--ui-duration-fast) ease;
   transform-origin: center bottom;
+}
+
+.clock-panel:hover {
+  filter: brightness(1.03);
 }
 
 .clock-panel::before,
@@ -350,6 +364,26 @@ html.perf-low-power .bottom-notes i {
   opacity: var(--search-opacity);
   transform: translate3d(var(--search-x), var(--search-y), 0) scale(var(--search-scale));
   transform-origin: center;
+  backdrop-filter: blur(var(--ui-glass-blur));
+  -webkit-backdrop-filter: blur(var(--ui-glass-blur));
+  transition:
+    transform var(--ui-duration-mid) var(--ui-ease),
+    box-shadow var(--ui-duration-mid) ease,
+    border-color var(--ui-duration-fast) ease,
+    background var(--ui-duration-fast) ease;
+}
+
+.search-bar:hover {
+  transform: translate3d(var(--search-x), calc(var(--search-y) + var(--ui-lift)), 0) scale(calc(var(--search-scale) * var(--ui-hover-scale)));
+  border-color: rgba(255, 232, 249, 0.38);
+}
+
+.search-bar:focus-within {
+  border-color: rgba(159, 235, 255, 0.62);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    0 16px 30px var(--shadow),
+    0 0 0 3px rgba(133, 231, 255, 0.2);
 }
 
 .engine-picker {
@@ -390,6 +424,12 @@ html.perf-low-power .bottom-notes i {
   font-weight: 900;
   background: transparent;
   outline: 0;
+  transition: transform var(--ui-duration-fast) var(--ui-ease), filter var(--ui-duration-fast) ease;
+}
+
+.engine-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
 }
 
 .engine-button span:first-child {
@@ -432,6 +472,10 @@ html.perf-low-power .bottom-notes i {
   text-align: left;
   background: rgba(222, 190, 255, 0.56);
   text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.28);
+  transition:
+    transform var(--ui-duration-fast) var(--ui-ease),
+    background var(--ui-duration-fast) ease,
+    border-color var(--ui-duration-fast) ease;
 }
 
 .engine-option[aria-selected="true"],
@@ -463,13 +507,28 @@ html.perf-low-power .bottom-notes i {
   font-size: 36px;
   background: rgba(72, 58, 136, 0.22);
   place-items: center;
+  transition: transform var(--ui-duration-fast) var(--ui-ease), background var(--ui-duration-fast) ease;
 }
 
 .search-submit:hover,
 .icon-button:hover,
 .text-button:hover,
-.shortcut:hover {
+.shortcut:hover,
+.dark-button:hover,
+.round-close:hover,
+.music-collapse:hover,
+.music-controls button:hover,
+.playlist-track:hover,
+.wallpaper-option:hover,
+.settings-tab:hover,
+.engine-option:hover {
+  transform: translateY(-1px) scale(var(--ui-hover-scale));
   filter: brightness(1.08);
+}
+
+.is-pressing {
+  transform: scale(var(--ui-press-scale)) !important;
+  filter: brightness(0.98);
 }
 
 .search-suggestions {
@@ -559,6 +618,11 @@ html.perf-low-power .bottom-notes i {
   font-weight: 900;
   text-decoration: none;
   text-shadow: 0 2px 0 rgba(56, 43, 96, 0.68);
+  transition: transform var(--ui-duration-fast) var(--ui-ease), filter var(--ui-duration-fast) ease;
+}
+
+.shortcut:hover {
+  transform: translateY(-2px) scale(1.02);
 }
 
 .shortcut.is-dragging {
@@ -583,6 +647,13 @@ html.perf-low-power .bottom-notes i {
   background: linear-gradient(135deg, var(--shortcut-color, #59c7e3), #5062b7);
   box-shadow: 0 10px 20px rgba(34, 25, 70, 0.28);
   overflow: hidden;
+  transition: box-shadow var(--ui-duration-mid) ease, transform var(--ui-duration-fast) var(--ui-ease);
+}
+
+.shortcut:hover .shortcut-icon {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.12),
+    0 14px 26px rgba(34, 25, 70, 0.34);
 }
 
 .shortcut-icon img {
@@ -720,6 +791,8 @@ html.perf-low-power .bottom-notes i {
   background: linear-gradient(180deg, rgba(64, 58, 88, 0.94), rgba(46, 42, 66, 0.96));
   box-shadow: 0 18px 34px rgba(32, 24, 62, 0.5);
   transition: transform 180ms ease, opacity 180ms ease;
+  backdrop-filter: blur(calc(var(--ui-glass-blur) - 2px));
+  -webkit-backdrop-filter: blur(calc(var(--ui-glass-blur) - 2px));
 }
 
 .music-player.is-collapsed {
@@ -747,6 +820,7 @@ html.perf-low-power .bottom-notes i {
   background: rgba(152, 133, 190, 0.62);
   box-shadow: 0 8px 18px rgba(34, 25, 70, 0.28);
   place-items: center;
+  transition: transform var(--ui-duration-fast) var(--ui-ease), filter var(--ui-duration-fast) ease;
 }
 
 .music-note-layer {
@@ -1059,6 +1133,10 @@ body:not(.is-music-playing) .bottom-notes {
   font-weight: 900;
   text-align: left;
   background: rgba(255, 255, 255, 0.06);
+  transition:
+    transform var(--ui-duration-fast) var(--ui-ease),
+    background var(--ui-duration-fast) ease,
+    border-color var(--ui-duration-fast) ease;
 }
 
 .playlist-track:hover,
@@ -1101,6 +1179,7 @@ body:not(.is-music-playing) .bottom-notes {
   font-size: 22px;
   font-weight: 900;
   background: transparent;
+  transition: transform var(--ui-duration-fast) var(--ui-ease), background var(--ui-duration-fast) ease;
 }
 
 .music-controls button:hover {
@@ -1221,6 +1300,10 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   background: rgba(152, 133, 190, 0.62);
   box-shadow: 0 8px 18px rgba(34, 25, 70, 0.28);
   place-items: center;
+  transition:
+    transform var(--ui-duration-fast) var(--ui-ease),
+    filter var(--ui-duration-fast) ease,
+    box-shadow var(--ui-duration-fast) ease;
 }
 
 .settings-trigger {
@@ -1247,7 +1330,7 @@ body.is-music-playing .album-spectrum .spectrum-bar {
 
 .settings-dialog::backdrop {
   background: rgba(28, 20, 58, 0.14);
-  backdrop-filter: none;
+  backdrop-filter: blur(4px);
 }
 
 .shortcut-dialog::backdrop {
@@ -1270,6 +1353,8 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   border-radius: 24px 0 0 24px;
   background: rgba(62, 47, 108, 0.92);
   box-shadow: 0 26px 50px rgba(24, 16, 54, 0.45);
+  backdrop-filter: blur(calc(var(--ui-glass-blur) + 4px));
+  -webkit-backdrop-filter: blur(calc(var(--ui-glass-blur) + 4px));
   scrollbar-color: rgba(218, 178, 238, 0.58) rgba(25, 20, 44, 0.24);
   scrollbar-width: thin;
 }
@@ -1307,6 +1392,11 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   text-align: left;
   background: transparent;
   cursor: pointer;
+  transition:
+    transform var(--ui-duration-fast) var(--ui-ease),
+    background var(--ui-duration-fast) ease,
+    border-color var(--ui-duration-fast) ease,
+    color var(--ui-duration-fast) ease;
 }
 
 .settings-tab:hover,
@@ -1563,6 +1653,10 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   border-radius: 10px;
   color: #fff;
   background: rgba(27, 20, 62, 0.42);
+  transition:
+    transform var(--ui-duration-fast) var(--ui-ease),
+    border-color var(--ui-duration-fast) ease,
+    filter var(--ui-duration-fast) ease;
 }
 
 .wallpaper-option img {
@@ -1619,6 +1713,10 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   color: #282047;
   font-weight: 900;
   background: linear-gradient(135deg, var(--cyan), #f0dcff);
+  transition:
+    transform var(--ui-duration-fast) var(--ui-ease),
+    filter var(--ui-duration-fast) ease,
+    box-shadow var(--ui-duration-fast) ease;
 }
 
 .text-button.ghost {
@@ -1684,6 +1782,7 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   font-size: 30px;
   background: rgba(51, 62, 91, 0.86);
   place-items: center;
+  transition: transform var(--ui-duration-fast) var(--ui-ease), filter var(--ui-duration-fast) ease;
 }
 
 .form-grid {
@@ -1728,6 +1827,7 @@ body.is-music-playing .album-spectrum .spectrum-bar {
   color: #f4f6ff;
   font-weight: 900;
   background: #273149;
+  transition: transform var(--ui-duration-fast) var(--ui-ease), filter var(--ui-duration-fast) ease;
 }
 
 .color-field {
@@ -1886,6 +1986,27 @@ body.is-music-playing .album-spectrum .spectrum-bar {
 @keyframes twinkle {
   50% {
     opacity: 0.18;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clock-panel,
+  .search-bar,
+  .engine-button,
+  .engine-option,
+  .search-submit,
+  .shortcut,
+  .shortcut-icon,
+  .icon-button,
+  .settings-tab,
+  .text-button,
+  .dark-button,
+  .round-close,
+  .music-controls button,
+  .music-collapse,
+  .playlist-track,
+  .wallpaper-option {
+    transition: none;
   }
 }
 

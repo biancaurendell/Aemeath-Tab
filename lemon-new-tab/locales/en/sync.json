@@ -1,0 +1,9 @@
+{
+  "error": {
+    "title": "Cloud Sync Error"
+  },
+  "fail": {
+    "message": "The cloud configuration version ({{cloud}}) does not match the local version ({{local}}). Please update the extension and try again.\n",
+    "title": "Cloud Sync Failed"
+  }
+}

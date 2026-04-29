@@ -25,7 +25,8 @@
     perfMeteors: "pixelNewTab.perf.meteors",
     perfClickEffects: "pixelNewTab.perf.clickEffects",
     perfPetMotion: "pixelNewTab.perf.petMotion",
-    perfLyrics: "pixelNewTab.perf.lyrics"
+    perfLyrics: "pixelNewTab.perf.lyrics",
+    uiInteractions: "pixelNewTab.ui.interactions"
   };
 
   const defaultMetingApiUrl = "https://api.injahow.cn/meting/?server=netease&type=playlist&id=17929070065";
@@ -100,6 +101,9 @@
       clickEffects: true,
       petMotion: true,
       lyrics: true
+    },
+    ui: {
+      interactions: true
     },
     assets: {
       backgroundOriginal: assetKeys.backgroundOriginal,
@@ -203,6 +207,7 @@
       shortcutLayout: { ...defaultConfig.shortcutLayout, ...(config?.shortcutLayout || {}) },
       music: { ...defaultConfig.music, ...(config?.music || {}) },
       performance: { ...defaultConfig.performance, ...(config?.performance || {}) },
+      ui: { ...defaultConfig.ui, ...(config?.ui || {}) },
       assets: { ...defaultConfig.assets, ...(config?.assets || {}) },
       version: currentConfigVersion
     };
@@ -256,6 +261,9 @@
         clickEffects: parseBoolean(localStorage.getItem(storageKeys.perfClickEffects), true),
         petMotion: parseBoolean(localStorage.getItem(storageKeys.perfPetMotion), true),
         lyrics: parseBoolean(localStorage.getItem(storageKeys.perfLyrics), true)
+      },
+      ui: {
+        interactions: parseBoolean(localStorage.getItem(storageKeys.uiInteractions), true)
       }
     };
   }
@@ -317,6 +325,7 @@
     writeIfNeeded(storageKeys.perfClickEffects, String(config.performance.clickEffects));
     writeIfNeeded(storageKeys.perfPetMotion, String(config.performance.petMotion));
     writeIfNeeded(storageKeys.perfLyrics, String(config.performance.lyrics));
+    writeIfNeeded(storageKeys.uiInteractions, String(config.ui.interactions));
   }
 
   async function buildConfigSnapshot() {
