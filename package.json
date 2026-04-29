@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "npm run pages:build",
     "dev": "node scripts/serve.mjs",
     "dev:open": "node scripts/serve.mjs --open",
     "pages:build": "node scripts/prepare-pages.mjs",
@@ -12,6 +13,7 @@
     "test:smoke:dist": "node scripts/smoke-check.mjs --root=dist",
     "test:visual": "node scripts/visual-check.mjs",
     "deploy": "npm run deploy:workers",
+    "predeploy": "npm run build",
     "deploy:workers": "npm run pages:build && npx wrangler deploy",
     "deploy:pages": "npm run pages:build && npx wrangler pages deploy dist --project-name imiss"
   },
