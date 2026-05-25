@@ -22,7 +22,10 @@ care.
 ## Current Architecture
 
 - Browser extension target: WXT + Vue 3 + TypeScript + Element Plus.
-- Web deployment target: Cloudflare Pages build under `web/cloudflare`.
+- Simple web deployment target: Cloudflare Pages build under `web/cloudflare`.
+- Production `aemeath.love` deployment target: Cloudflare Workers Assets via
+  `wrangler.jsonc`, serving the extension-like WXT output prepared under
+  `dist-cloudflare-worker`.
 - Background service worker: `entrypoints/background/index.ts`.
 - New-tab startup: `entrypoints/newtab/init.ts`, then `entrypoints/newtab/main.ts`.
 - Main new-tab UI: `entrypoints/newtab/App.vue`.
@@ -51,6 +54,7 @@ Use Node.js 24+ and pnpm for project commands.
 - Build Firefox extension: `pnpm run build:firefox`
 - Build Edge extension: `pnpm run build:edge`
 - Build Cloudflare web target: `pnpm run build:cloudflare`
+- Patch Cloudflare Workers Assets output: `pnpm run patch:cloudflare-worker`
 - Zip Chrome/Firefox/Edge: `pnpm run zip`, `pnpm run zip:firefox`,
   `pnpm run zip:edge`
 - Format: `pnpm run format`
@@ -75,9 +79,31 @@ least `pnpm run build`.
   Aemeath assets unless a shared feature genuinely needs to change.
 - Keep Cloudflare web code as a separate build target, not as a replacement for
   extension code.
-- Do not commit build output from `.output` or `dist-cloudflare`.
+- Do not commit build output from `.output`, `dist-cloudflare`, or
+  `dist-cloudflare-worker`.
 - Do not stage unrelated local folders such as `.claude/` or unreviewed asset
   drops unless the user explicitly asks.
+
+## Cloudflare Workers Deployment Notes
+
+The `aemeath.love` deployment uses the Worker named `imiss` with Workers Assets,
+not the simplified `web/cloudflare` page. For this target, deploy from
+`dist-cloudflare-worker` using `wrangler.jsonc`.
+
+- Keep `wrangler.jsonc` pointed at `./dist-cloudflare-worker` with
+  `not_found_handling: "single-page-application"`.
+- Do not include `_redirects` in `dist-cloudflare-worker`; Workers Assets rejects
+  the old SPA redirect rule as an infinite loop.
+- The default wallpaper must exist at
+  `aemeath/wallpapers/default-config.png`. Also run
+  `pnpm run patch:cloudflare-worker` before deployment so the compatibility
+  alias `aemeath_wallpapers_default-config.png` is present.
+- If the deployed page loads music but loses the wallpaper, first check the two
+  wallpaper URLs directly before changing UI code:
+  `/aemeath/wallpapers/default-config.png` and
+  `/aemeath_wallpapers_default-config.png`.
+- If both URLs work but the page is still blank or wallpaperless, suspect stale
+  web-shim `localStorage` settings before changing source code.
 
 ## Data And Compatibility
 

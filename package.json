@@ -9,6 +9,7 @@
     "dev:edge": "wxt -b edge",
     "build": "vue-tsc --build && wxt build",
     "build:cloudflare": "vue-tsc --noEmit -p tsconfig.cloudflare.json && vite build --config vite.cloudflare.config.ts",
+    "patch:cloudflare-worker": "node scripts/patch-cloudflare-worker-assets.mjs",
     "build:firefox": "vue-tsc --build && wxt build -b firefox",
     "build:edge": "vue-tsc --build && wxt build -b edge",
     "zip": "wxt zip",
