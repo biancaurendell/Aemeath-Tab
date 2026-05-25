@@ -1,5 +1,5 @@
 # Aemeath's Tab
-
+![alt text](preview/1..webp)
 Aemeath's Tab 是基于
 [Redlnn/lemon-new-tab-page](https://github.com/Redlnn/lemon-new-tab-page)
 二次开发的新标签页项目。它不是 Lemon New Tab 的官方版本，也不代表原作者立场。
