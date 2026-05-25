@@ -63,6 +63,7 @@ const playMode = ref<PlayMode>('list')
 const volume = ref(0.7)
 const muted = ref(false)
 const playWhenReady = ref(false)
+const musicCoverRetries = ref(new Map<string, number>())
 const actionButtonsReady = ref(false)
 const petFacingLeft = ref(false)
 const petDragging = ref(false)
@@ -72,6 +73,7 @@ const petPosition = reactive({
 })
 const settings = useSettingsStore()
 const musicCoverFallback = '/aemeath/favicon.jpeg'
+const musicCoverMaxRetries = 2
 
 let petInitialized = false
 let petTarget: { x: number; y: number } | null = null
@@ -150,6 +152,20 @@ function resolveTrackCover(record: UnknownRecord): string {
     pickNestedCoverText(record, 'album', coverKeys) ||
     pickNestedCoverText(record, 'al', coverKeys)
   )
+}
+
+function resolveMusicCoverSrc(cover: string) {
+  if (!cover) return musicCoverFallback
+  const retries = musicCoverRetries.value.get(cover) || 0
+  if (retries > musicCoverMaxRetries) return musicCoverFallback
+  if (retries === 0) return cover
+  try {
+    const parsed = new URL(cover, window.location.href)
+    parsed.searchParams.set('_cover_retry', String(retries))
+    return parsed.toString()
+  } catch {
+    return cover
+  }
 }
 
 function unwrapPlaylistPayload(payload: unknown): unknown[] {
@@ -339,7 +355,7 @@ async function toggleMusic() {
   if (!settings.aemeath.music.enabled) return
   playerOpen.value = true
   if (tracks.value.length === 0) {
-    playWhenReady.value = true
+    playWhenReady.value = false
     await loadPlaylist()
     const audio = audioRef.value
     if (!audio || tracks.value.length === 0) return
@@ -467,10 +483,16 @@ function handleAudioError() {
   isPlaying.value = false
 }
 
-function handleMusicCoverError(event: Event) {
+function handleMusicCoverError(event: Event, cover = '') {
   const image = event.target as HTMLImageElement
   if (image.src.endsWith(musicCoverFallback)) return
-  image.src = musicCoverFallback
+  if (!cover) {
+    image.src = musicCoverFallback
+    return
+  }
+  const retries = (musicCoverRetries.value.get(cover) || 0) + 1
+  musicCoverRetries.value = new Map([...musicCoverRetries.value, [cover, retries]])
+  image.src = resolveMusicCoverSrc(cover)
 }
 
 function formatTime(value: number) {
@@ -812,7 +834,13 @@ watch(
   >
     <div class="aemeath-music__hero">
       <button class="aemeath-music__cover" type="button" aria-label="Toggle music" @click="toggleMusic">
-        <img v-if="activeTrack?.cover" :src="activeTrack.cover" alt="" @error="handleMusicCoverError" />
+        <img
+          v-if="activeTrack?.cover"
+          :src="resolveMusicCoverSrc(activeTrack.cover)"
+          alt=""
+          referrerpolicy="no-referrer"
+          @error="handleMusicCoverError($event, activeTrack.cover)"
+        />
         <el-icon v-else><music-note-round /></el-icon>
       </button>
 
@@ -938,7 +966,12 @@ watch(
           :class="{ 'is-active': index === activeIndex }"
           @click="selectTrack(index, true)"
         >
-          <img :src="track.cover || musicCoverFallback" alt="" @error="handleMusicCoverError" />
+          <img
+            :src="resolveMusicCoverSrc(track.cover)"
+            alt=""
+            referrerpolicy="no-referrer"
+            @error="handleMusicCoverError($event, track.cover)"
+          />
           <span>
             <strong>{{ track.name }}</strong>
             <small>{{ track.artist || 'Unknown artist' }}</small>
