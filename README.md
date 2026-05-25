@@ -1,5 +1,4 @@
 # Aemeath's Tab
-<img width="2560" height="1282" alt="image" src="https://github.com/user-attachments/assets/b65d7d5c-7951-49df-a3ae-419ae3bf8dde" />
 
 Aemeath's Tab 是基于
 [Redlnn/lemon-new-tab-page](https://github.com/Redlnn/lemon-new-tab-page)
