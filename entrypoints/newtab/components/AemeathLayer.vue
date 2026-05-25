@@ -71,6 +71,7 @@ const petPosition = reactive({
   y: 0,
 })
 const settings = useSettingsStore()
+const musicCoverFallback = '/aemeath/favicon.jpeg'
 
 let petInitialized = false
 let petTarget: { x: number; y: number } | null = null
@@ -86,6 +87,7 @@ let pointerMoveTicking = false
 let lastClickEffectAt = 0
 let lyricScrollTimer = 0
 let userScrollingLyrics = false
+let playlistLoadPromise: Promise<void> | null = null
 
 const activeTrack = computed(() => tracks.value[activeIndex.value])
 const musicProgress = computed(() => (duration.value ? (currentTime.value / duration.value) * 100 : 0))
@@ -124,9 +126,30 @@ function pickText(record: UnknownRecord, keys: string[]): string {
   return ''
 }
 
-function pickNestedText(record: UnknownRecord, key: string, nestedKeys: string[]): string {
+function isImageSource(value: string): boolean {
+  return /^(https?:)?\/\//.test(value) || value.startsWith('/') || /^data:image\//.test(value) || value.startsWith('blob:')
+}
+
+function pickCoverText(record: UnknownRecord, keys: string[]): string {
+  for (const key of keys) {
+    const value = asText(record[key]).trim()
+    if (value && isImageSource(value)) return value
+  }
+  return ''
+}
+
+function pickNestedCoverText(record: UnknownRecord, key: string, nestedKeys: string[]): string {
   const nested = asRecord(record[key])
-  return nested ? pickText(nested, nestedKeys) : ''
+  return nested ? pickCoverText(nested, nestedKeys) : ''
+}
+
+function resolveTrackCover(record: UnknownRecord): string {
+  const coverKeys = ['pic', 'picUrl', 'cover', 'picture', 'artwork', 'image', 'img', 'poster']
+  return (
+    pickCoverText(record, coverKeys) ||
+    pickNestedCoverText(record, 'album', coverKeys) ||
+    pickNestedCoverText(record, 'al', coverKeys)
+  )
 }
 
 function unwrapPlaylistPayload(payload: unknown): unknown[] {
@@ -194,10 +217,7 @@ function normalizeTrack(item: unknown, index: number): Track {
     url: resolveMetingProxyUrl(
       pickText(record, ['url', 'src', 'link', 'audio', 'mp3', 'song_url', 'songUrl']),
     ),
-    cover:
-      pickText(record, ['pic', 'cover', 'picture', 'artwork']) ||
-      pickNestedText(record, 'album', ['picUrl']) ||
-      pickNestedText(record, 'al', ['picUrl']),
+    cover: resolveTrackCover(record),
     lrc: pickText(record, ['lrc', 'lyric', 'lyrics']),
   }
 }
@@ -252,28 +272,37 @@ async function loadLyrics(track: Track) {
 
 async function loadPlaylist() {
   if (!settings.aemeath.music.enabled || !settings.aemeath.music.playlistUrl) return
-  musicLoading.value = true
-  musicError.value = ''
-  try {
-    const response = await fetch(settings.aemeath.music.playlistUrl, { cache: 'no-store' })
-    if (!response.ok) return
-    const payload = await response.json()
-    tracks.value = unwrapPlaylistPayload(payload)
-      .map(normalizeTrack)
-      .filter((track) => track.url)
-    if (tracks.value.length > 0) {
-      selectTrack(Math.min(activeIndex.value, tracks.value.length - 1), playWhenReady.value)
-      playWhenReady.value = false
-      musicDrawerOpen.value = true
-      lyricsDrawerOpen.value = false
-    } else {
-      musicError.value = 'No songs loaded'
+  if (playlistLoadPromise) return playlistLoadPromise
+  playlistLoadPromise = (async () => {
+    musicLoading.value = true
+    musicError.value = ''
+    try {
+      const response = await fetch(settings.aemeath.music.playlistUrl, { cache: 'no-store' })
+      if (!response.ok) return
+      const payload = await response.json()
+      tracks.value = unwrapPlaylistPayload(payload)
+        .map(normalizeTrack)
+        .filter((track) => track.url)
+      if (tracks.value.length > 0) {
+        selectTrack(Math.min(activeIndex.value, tracks.value.length - 1), playWhenReady.value)
+        playWhenReady.value = false
+        musicDrawerOpen.value = true
+        lyricsDrawerOpen.value = false
+      } else {
+        musicError.value = 'No songs loaded'
+      }
+    } catch (error) {
+      musicError.value = 'Playlist unavailable'
+      console.warn('[Aemeath] Meting playlist unavailable.', error)
+    } finally {
+      musicLoading.value = false
     }
-  } catch (error) {
-    musicError.value = 'Playlist unavailable'
-    console.warn('[Aemeath] Meting playlist unavailable.', error)
+  })()
+
+  try {
+    await playlistLoadPromise
   } finally {
-    musicLoading.value = false
+    playlistLoadPromise = null
   }
 }
 
@@ -306,12 +335,17 @@ function toggleMusicPanel() {
   if (tracks.value.length === 0 && !musicLoading.value) void loadPlaylist()
 }
 
-function toggleMusic() {
+async function toggleMusic() {
   if (!settings.aemeath.music.enabled) return
   playerOpen.value = true
   if (tracks.value.length === 0) {
     playWhenReady.value = true
-    if (!musicLoading.value) void loadPlaylist()
+    await loadPlaylist()
+    const audio = audioRef.value
+    if (!audio || tracks.value.length === 0) return
+    ensureTrackLoaded()
+    applyAudioVolume()
+    if (audio.paused) audio.play().catch(() => {})
     return
   }
   const audio = audioRef.value
@@ -431,6 +465,12 @@ function updateProgress() {
 function handleAudioError() {
   musicError.value = 'Playback error'
   isPlaying.value = false
+}
+
+function handleMusicCoverError(event: Event) {
+  const image = event.target as HTMLImageElement
+  if (image.src.endsWith(musicCoverFallback)) return
+  image.src = musicCoverFallback
 }
 
 function formatTime(value: number) {
@@ -772,7 +812,7 @@ watch(
   >
     <div class="aemeath-music__hero">
       <button class="aemeath-music__cover" type="button" aria-label="Toggle music" @click="toggleMusic">
-        <img v-if="activeTrack?.cover" :src="activeTrack.cover" alt="" />
+        <img v-if="activeTrack?.cover" :src="activeTrack.cover" alt="" @error="handleMusicCoverError" />
         <el-icon v-else><music-note-round /></el-icon>
       </button>
 
@@ -898,7 +938,7 @@ watch(
           :class="{ 'is-active': index === activeIndex }"
           @click="selectTrack(index, true)"
         >
-          <img :src="track.cover || '/aemeath/favicon.jpeg'" alt="" />
+          <img :src="track.cover || musicCoverFallback" alt="" @error="handleMusicCoverError" />
           <span>
             <strong>{{ track.name }}</strong>
             <small>{{ track.artist || 'Unknown artist' }}</small>
