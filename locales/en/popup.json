@@ -1,0 +1,7 @@
+{
+  "title": "Add Shortcut",
+  "addToShortcut": "Add",
+  "addSuccess": "Added to shortcuts",
+  "alreadyExists": "This page is already in shortcuts",
+  "cannotAdd": "Cannot add this page"
+}

@@ -1,0 +1,15 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": ["web/**/*", "web/**/*.vue", "types/**/*"],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.cloudflare.tsbuildinfo",
+    "paths": {
+      "@/*": ["./*"],
+      "@newtab/*": ["./entrypoints/newtab/*"],
+      "@cloudflare/*": ["./web/cloudflare/*"]
+    },
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "types": ["vite/client", "unplugin-icons/types/vue"]
+  }
+}

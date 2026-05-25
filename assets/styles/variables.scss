@@ -1,0 +1,28 @@
+$font-apple: -apple-system, BlinkMacSystemFont;
+$font-fallback: system-ui, sans-serif, emoji;
+$font-claude:
+  'Anthropic Sans';
+$font-common:
+  #{$font-claude},
+  'Segoe UI Variable Text',
+  'Segoe UI Variable Display',
+  'Segoe UI Variable',
+  'Inter',
+  'SF Pro Text',
+  'SF Pro Display',
+  'Segoe UI',
+  'Roboto',
+  'Helvetica Neue',
+  Arial,
+  'DejaVu Sans',
+  'Liberation Sans',
+  ui-sans-serif;
+$font-sc:
+  PingFangSC, 'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei UI', 'Microsoft YaHei',
+  'Source Han Sans SC', 'Source Han Sans CN', 'Noto Sans CJK SC', 'Noto Sans SC';
+$font-hk:
+  PingFangHK, 'PingFang HK', 'HarmonyOS Sans TC', 'Microsoft JhengHei UI', 'Microsoft JhengHei',
+  'Source Han Sans HK', 'Noto Sans CJK HK', 'Noto Sans HK';
+$font-tc:
+  PingFangTC, 'PingFang TC', 'HarmonyOS Sans TC', 'Microsoft JhengHei UI', 'Microsoft JhengHei',
+  'Source Han Sans TC', 'Noto Sans CJK TC', 'Noto Sans TC';

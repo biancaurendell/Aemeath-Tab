@@ -1,0 +1,221 @@
+{
+  "about": {
+    "yiyanProvider": "一言API由 {api} 提供"
+  },
+  "bookmark": {
+    "404": "什么都没找到",
+    "addToShortcut": "添加到快捷方式",
+    "added": "已添加到快捷方式",
+    "collapse": {
+      "all": "折叠本层全部",
+      "other": "折叠同级其他项"
+    },
+    "delete": {
+      "confirm": "你确定要删除「{{name}}」吗？",
+      "confirmFolder": "「{{name}}」是一个目录，删除他会把其中所有书签一起删除，确定吗？",
+      "success": "已删除「 {{title}}」"
+    },
+    "expandHint": "请展开侧边栏以查看书签",
+    "moveError": "书签移动失败",
+    "sortBy": "排序方式",
+    "sortMode": {
+      "createdAsc": "由新到旧",
+      "createdDesc": "由旧到新",
+      "nameAsc": "名称由A到Z",
+      "nameDesc": "名称由Z到A",
+      "origin": "原始顺序"
+    },
+    "title": "书签",
+    "tooSmall": "侧边栏宽度过小"
+  },
+  "bootstrap": {
+    "invalidVer": {
+      "bak": "你还可以点击下方按钮以下载旧版本的配置文件备份（不支持导入到当前版本）。",
+      "btn": "清除并刷新",
+      "msg": "非常抱歉，检测到不受支持的历史设置版本。为保证扩展功能正常运行，请清除扩展数据并刷新。",
+      "title": "不支持的配置版本"
+    }
+  },
+  "changelog": {
+    "hideMajor": "不显示大版本更新日志",
+    "newVersionMsg": "你的起始页更新啦~",
+    "otherVersions": {
+      "description": "仅包含5个版本的更新日志，剩余内容请点击下方链接跳转查看：",
+      "linkEn": "English",
+      "linkZhCN": "中文（简体）",
+      "title": "其他版本？"
+    },
+    "title": "更新日志"
+  },
+  "common": {
+    "cancel": "取消",
+    "confirm": "好",
+    "delete": "删除",
+    "edit": "编辑",
+    "enable": "启用",
+    "icon": "图标（可选）",
+    "name": "名称",
+    "no": "算了",
+    "save": "保存",
+    "undo": "撤销",
+    "url": "地址",
+    "warning": "警告"
+  },
+  "customSearchEngine": {
+    "add": "添加自定义搜索引擎",
+    "addDialog": {
+      "invalidUrlError": "URL 无效或不包含 %s 占位符，请重新输入~",
+      "nameRequiredError": "名称不能为空~",
+      "urlHelp": "URL 必须包含 %s 作为搜索关键词占位符"
+    },
+    "deleteConfirm": "确定要删除搜索引擎「{{name}}」吗？",
+    "edit": "编辑自定义搜索引擎",
+    "title": "自定义搜索引擎",
+    "fetchingFavicon": "正在后台获取图标..."
+  },
+  "dailyBoard": {
+    "addTask": "添加任务",
+    "completeTask": "完成任务",
+    "deleteTask": "删除任务",
+    "empty": "写下今天最重要的一件事",
+    "focus": "今日焦点",
+    "focusPlaceholder": "今天想完成什么？",
+    "note": "便签",
+    "notePlaceholder": "临时想法、链接或稍后处理的事...",
+    "pauseTimer": "暂停计时",
+    "reopenTask": "重新打开任务",
+    "resetTimer": "重置计时",
+    "startTimer": "开始计时",
+    "timerBreak": "短休息",
+    "timerFocus": "专注",
+    "taskPlaceholder": "添加一个待办"
+  },
+  "dock": {
+    "launchpad": {
+      "add": "添加",
+      "empty": "无结果",
+      "search": "搜索...",
+      "title": "启动台"
+    }
+  },
+  "menu": {
+    "about": "关于",
+    "backgroundPreference": "背景偏好设置",
+    "help": "帮助和反馈",
+    "searchEnginePreference": "搜索引擎偏好",
+    "sponsor": "支持我们"
+  },
+  "notification": {
+    "bing": {
+      "message": "请检查开发者工具中的控制台提示。",
+      "title": "获取 Bing 壁纸失败"
+    },
+    "faviconCacheHint": {
+      "message": "可在「其他」设置中开启图标缓存，获得更快的图标加载速度",
+      "title": "提示：图标缓存未开启"
+    },
+    "wallpaperCache": {
+      "message": "无法缓存在线壁纸：${error}",
+      "title": "缓存在线壁纸失败"
+    },
+    "welcome": {
+      "message": "感谢安装 Aemeath's Tab！你可以在右下角的设置中自定义你的新标签页。",
+      "title": "欢迎使用 Aemeath's Tab"
+    }
+  },
+  "quickCommand": {
+    "commands": {
+      "background": {
+        "description": "切换壁纸、模糊与背景来源",
+        "title": "背景偏好"
+      },
+      "daily": {
+        "description": "记录今日焦点、待办与便签",
+        "title": "今日面板"
+      },
+      "bookmark": {
+        "description": "打开右侧书签侧栏",
+        "title": "书签侧栏"
+      },
+      "engine": {
+        "description": "管理默认搜索与自定义引擎",
+        "title": "搜索引擎"
+      },
+      "search": {
+        "description": "回到搜索框并立即输入",
+        "title": "聚焦搜索"
+      },
+      "settings": {
+        "description": "打开完整设置中心",
+        "title": "设置中心"
+      },
+      "shortcut": {
+        "description": "创建一个新的快速访问入口",
+        "title": "添加快捷方式"
+      }
+    },
+    "empty": "没有匹配的操作",
+    "hint": "快速指挥中心 (Ctrl/⌘ K)",
+    "placeholder": "搜索操作...",
+    "subtitle": "输入关键词，或按右侧 Alt 快捷键直达。",
+    "subtitlePlain": "所有核心入口都在这里，键盘也能抵达。",
+    "title": "快速指挥中心"
+  },
+  "search": {
+    "engineMenu": {
+      "current": "当前",
+      "tipPrefix": "Tip：按下",
+      "tipSuffix": "切换搜索引擎"
+    },
+    "engines": {
+      "baidu": "百度",
+      "bing": "必应",
+      "duckduckgo": "DuckDuckGo",
+      "google": "Google",
+      "yandex": "Yandex"
+    },
+    "placeholder": "搜索",
+    "purgeSearchHistory": "清除搜索历史",
+    "searchEngineNotFound": "未找到搜索引擎"
+  },
+  "shortcut": {
+    "addDialog": {
+      "extensionIconTip": "你也可以通过点击浏览器扩展菜单中的图标来添加当前浏览页面到快速访问。",
+      "invalidUrlError": "无效的地址，请重新输入~",
+      "tooLargeImageError": "图片大小超过 100KiB，请重新选择~",
+      "uploadFaviconAlert": "没有上传图标时建议打开「设置-其他-图标缓存」以自动获取图标"
+    },
+    "addShortcut": "添加快速访问",
+    "bookmark": {
+      "add": "收藏到书签",
+      "existing": "该书签已存在",
+      "success": "已收藏到「{{folder}}」"
+    },
+    "editShortcut": "编辑快速访问",
+    "deleteMessage": "已删除该快速访问",
+    "hide": "隐藏",
+    "hideTopMessage": {
+      "content": "已隐藏该最常访问网站",
+      "restoreDefault": "恢复默认",
+      "restoreSuccess": "已恢复默认最常访问网站"
+    },
+    "pin": "置顶",
+    "unpin": "取消置顶",
+    "unpinMessage": "已取消置顶该链接",
+    "fetchingFavicon": "正在后台获取图标..."
+  },
+  "sponsor": "这个扩展是我当初利用业余时间为了满足自己的需求而开始开发的。很高兴它也对你有帮助！如果你真的想支持我，可以联系我的邮箱：redlnn@outlook.com。感谢你的关注与支持！",
+  "time": {
+    "afternoon": "下午",
+    "dawn": "凌晨",
+    "dusk": "傍晚",
+    "evening": "晚上",
+    "lateNight": "深夜",
+    "morning": "早上",
+    "noon": "中午"
+  },
+  "title": "新标签页",
+  "yiyan": {
+    "copied": "已复制到剪贴板"
+  }
+}

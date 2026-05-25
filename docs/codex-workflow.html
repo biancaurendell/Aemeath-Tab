@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aemeath Codex Workflow</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #111111;
+        --muted: #5d6470;
+        --line: #d9dde5;
+        --paper: #faf8f3;
+        --panel: #ffffff;
+        --blue: #1c67ff;
+        --green: #16864b;
+        --amber: #bd7300;
+        --red: #c6362f;
+        --violet: #6d4cff;
+        --shadow: 0 18px 48px rgba(20, 22, 28, 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background:
+          linear-gradient(rgba(17, 17, 17, 0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(17, 17, 17, 0.035) 1px, transparent 1px),
+          var(--paper);
+        background-size: 24px 24px;
+        color: var(--ink);
+        font-family:
+          "SF Pro Text",
+          "Segoe UI",
+          "PingFang SC",
+          "Microsoft YaHei",
+          sans-serif;
+        line-height: 1.55;
+      }
+
+      main {
+        width: min(1180px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 40px 0 56px;
+      }
+
+      header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        gap: 28px;
+        align-items: end;
+        padding-bottom: 28px;
+        border-bottom: 2px solid var(--ink);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        max-width: 840px;
+        font-size: clamp(38px, 7vw, 88px);
+        line-height: 0.96;
+        letter-spacing: 0;
+      }
+
+      .subtitle {
+        max-width: 760px;
+        margin-top: 18px;
+        color: var(--muted);
+        font-size: 18px;
+      }
+
+      .stamp {
+        justify-self: end;
+        border: 2px solid var(--ink);
+        background: var(--panel);
+        padding: 16px;
+        box-shadow: 8px 8px 0 var(--ink);
+      }
+
+      .stamp strong {
+        display: block;
+        font-size: 20px;
+      }
+
+      .stamp span {
+        display: block;
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 4px;
+      }
+
+      section {
+        margin-top: 30px;
+      }
+
+      .section-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 14px;
+      }
+
+      .section-title h2 {
+        font-size: 24px;
+      }
+
+      .section-title small {
+        color: var(--muted);
+        font-family: Consolas, "SFMono-Regular", monospace;
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .grid.cols-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .grid.cols-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .card {
+        min-height: 100%;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.92);
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+
+      .card h3 {
+        font-size: 17px;
+        margin-bottom: 8px;
+      }
+
+      .card p,
+      .card li {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        border-radius: 999px;
+        border: 1px solid currentColor;
+        padding: 0 10px;
+        margin-bottom: 12px;
+        font-family: Consolas, "SFMono-Regular", monospace;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .blue {
+        color: var(--blue);
+      }
+
+      .green {
+        color: var(--green);
+      }
+
+      .amber {
+        color: var(--amber);
+      }
+
+      .red {
+        color: var(--red);
+      }
+
+      .violet {
+        color: var(--violet);
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+        align-items: stretch;
+      }
+
+      .step {
+        position: relative;
+        border: 2px solid var(--ink);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 15px 14px 16px;
+        min-height: 150px;
+      }
+
+      .step::after {
+        content: "→";
+        position: absolute;
+        right: -17px;
+        top: 50%;
+        width: 24px;
+        height: 24px;
+        margin-top: -12px;
+        border: 2px solid var(--ink);
+        border-radius: 50%;
+        background: var(--paper);
+        text-align: center;
+        line-height: 20px;
+        font-weight: 800;
+        z-index: 2;
+      }
+
+      .step:last-child::after {
+        content: none;
+      }
+
+      .num {
+        display: inline-grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        margin-bottom: 14px;
+        border-radius: 50%;
+        background: var(--ink);
+        color: white;
+        font-weight: 800;
+      }
+
+      .step h3 {
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+
+      .step p {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .lane {
+        display: grid;
+        grid-template-columns: 140px minmax(0, 1fr);
+        gap: 14px;
+        align-items: stretch;
+        margin-bottom: 10px;
+      }
+
+      .lane-label {
+        display: grid;
+        place-items: center;
+        border-radius: 8px;
+        border: 2px solid var(--ink);
+        background: var(--ink);
+        color: white;
+        font-weight: 800;
+        text-align: center;
+        padding: 12px;
+      }
+
+      .lane-body {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .pill {
+        min-height: 72px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 12px;
+      }
+
+      .pill strong {
+        display: block;
+        font-size: 14px;
+      }
+
+      .pill span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 4px;
+      }
+
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+
+      .checklist {
+        display: grid;
+        gap: 10px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+      }
+
+      .checklist li {
+        display: grid;
+        grid-template-columns: 24px minmax(0, 1fr);
+        gap: 10px;
+        align-items: start;
+      }
+
+      .box {
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
+        border: 2px solid currentColor;
+        border-radius: 4px;
+      }
+
+      code,
+      pre {
+        font-family: Consolas, "SFMono-Regular", monospace;
+      }
+
+      pre {
+        overflow: auto;
+        margin: 0;
+        border-radius: 8px;
+        background: #111111;
+        color: #f5f0e7;
+        padding: 16px;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .matrix {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+      }
+
+      .matrix th,
+      .matrix td {
+        border: 1px solid var(--line);
+        padding: 12px;
+        text-align: left;
+        vertical-align: top;
+        font-size: 14px;
+      }
+
+      .matrix th {
+        background: #111111;
+        color: white;
+      }
+
+      .matrix td {
+        color: var(--muted);
+      }
+
+      .callout {
+        border: 2px solid var(--ink);
+        border-radius: 8px;
+        background: #fff2c7;
+        padding: 18px;
+      }
+
+      .callout strong {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      footer {
+        margin-top: 36px;
+        padding-top: 18px;
+        border-top: 2px solid var(--ink);
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      @media (max-width: 980px) {
+        header,
+        .split {
+          grid-template-columns: 1fr;
+        }
+
+        .stamp {
+          justify-self: start;
+        }
+
+        .grid.cols-4,
+        .grid.cols-3,
+        .flow,
+        .lane-body {
+          grid-template-columns: 1fr;
+        }
+
+        .step::after {
+          content: "↓";
+          left: 24px;
+          right: auto;
+          top: auto;
+          bottom: -18px;
+          margin: 0;
+        }
+
+        .lane {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>Codex 开发工作流地图</h1>
+          <p class="subtitle">
+            你的项目现在采用干净的新 <code>main</code> 主线。以后把 Codex 当成持久工作系统：
+            线程推进，文档记忆，Git 归档，验证器收口。
+          </p>
+        </div>
+        <aside class="stamp">
+          <strong>Aemeath Tab</strong>
+          <span>主线：main</span>
+          <span>备份：archive/pre-history-reset-2026-05-24</span>
+          <span>原则：小步、可验、可回滚</span>
+        </aside>
+      </header>
+
+      <section>
+        <div class="section-title">
+          <h2>一条主循环</h2>
+          <small>input → context → plan → edit → verify → commit → memory</small>
+        </div>
+        <div class="flow">
+          <article class="step">
+            <span class="num">1</span>
+            <h3>粗糙输入</h3>
+            <p>把想法、截图、报错、现象丢给 Codex。不要追求一开始完美，先把问题说出来。</p>
+          </article>
+          <article class="step">
+            <span class="num">2</span>
+            <h3>锁定边界</h3>
+            <p>明确范围、不要做什么、验收标准。高风险任务先只读，不直接改。</p>
+          </article>
+          <article class="step">
+            <span class="num">3</span>
+            <h3>最小改动</h3>
+            <p>只碰当前任务需要的文件。避免顺手重构、顺手改样式、顺手清理旧东西。</p>
+          </article>
+          <article class="step">
+            <span class="num">4</span>
+            <h3>验证器收口</h3>
+            <p>构建、测试、浏览器检查、截图。没有 verifier 的任务不算真正完成。</p>
+          </article>
+          <article class="step">
+            <span class="num">5</span>
+            <h3>提交与沉淀</h3>
+            <p>只提交相关改动。把决策、踩坑、下一步写进项目文档，而不是只留在聊天里。</p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-title">
+          <h2>任务分流</h2>
+          <small>不同任务，用不同闸门</small>
+        </div>
+        <div class="grid cols-4">
+          <article class="card">
+            <span class="tag blue">BUGFIX</span>
+            <h3>修 bug</h3>
+            <p>先复现，再改动，再验证。不要把修 bug 变成视觉重做或架构优化。</p>
+          </article>
+          <article class="card">
+            <span class="tag green">FEATURE</span>
+            <h3>加功能</h3>
+            <p>先写用户路径和验收标准。功能完成后补入口、空状态、错误状态和设置项。</p>
+          </article>
+          <article class="card">
+            <span class="tag amber">DEPLOY</span>
+            <h3>部署目标</h3>
+            <p>扩展版本走 WXT，网页版本走 Cloudflare。源码可同仓，构建产物不要进主线。</p>
+          </article>
+          <article class="card">
+            <span class="tag red">RISK</span>
+            <h3>高风险操作</h3>
+            <p>删文件、改配置、改远端、强推、部署，都必须先列计划和回滚方式。</p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-title">
+          <h2>修 Bug 模板</h2>
+          <small>reproduce → isolate → patch → prove</small>
+        </div>
+        <div class="split">
+          <article class="card">
+            <h3>给 Codex 的开工提示</h3>
+            <pre>任务：修复 [具体 bug]
+现象：[截图/报错/复现步骤]
+范围：只允许改 [模块/文件]
+不要做：不要重构，不要改无关 UI
+验收：
+- 能复现旧问题
+- 修复后旧问题消失
+- pnpm build 通过
+- 必要时浏览器检查桌面/移动</pre>
+          </article>
+          <article class="card">
+            <h3>Codex 应该产出</h3>
+            <ul class="checklist">
+              <li><span class="box blue"></span><span>复现路径：哪一步触发 bug。</span></li>
+              <li><span class="box blue"></span><span>根因：具体到函数、状态或样式规则。</span></li>
+              <li><span class="box blue"></span><span>补丁：最小修改，不碰相邻无关代码。</span></li>
+              <li><span class="box blue"></span><span>验证：命令结果和手动观察。</span></li>
+              <li><span class="box blue"></span><span>提交：一个可回滚的 bugfix commit。</span></li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-title">
+          <h2>新功能模板</h2>
+          <small>spec → slice → states → verify → commit</small>
+        </div>
+        <div class="split">
+          <article class="card">
+            <h3>给 Codex 的开工提示</h3>
+            <pre>任务：增加 [功能名]
+用户路径：
+1. 用户从哪里进入
+2. 点击/输入什么
+3. 成功后看到什么
+范围：只做第一版最小可用
+不要做：不要顺手重构旧模块
+验收：
+- 主路径可用
+- 空状态/加载/错误状态合理
+- pnpm build 通过
+- UI 不遮挡、不溢出</pre>
+          </article>
+          <article class="card">
+            <h3>功能切片规则</h3>
+            <ul class="checklist">
+              <li><span class="box green"></span><span>先做最小闭环，不先做豪华设置面板。</span></li>
+              <li><span class="box green"></span><span>先接入口，再接状态，再做边界。</span></li>
+              <li><span class="box green"></span><span>视觉跟随现有 Aemeath 风格，不另起一套设计语言。</span></li>
+              <li><span class="box green"></span><span>每个功能只进一个主题分支，完成后合回 main。</span></li>
+              <li><span class="box green"></span><span>功能完成后更新任务池或说明文档。</span></li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-title">
+          <h2>Git 车道</h2>
+          <small>main clean, archive recoverable, feature disposable</small>
+        </div>
+        <div class="lane">
+          <div class="lane-label">main</div>
+          <div class="lane-body">
+            <div class="pill"><strong>干净主线</strong><span>只放完成且验证过的结果。</span></div>
+            <div class="pill"><strong>短历史</strong><span>方案 A 已压平为新根提交。</span></div>
+            <div class="pill"><strong>可部署</strong><span>扩展与 Cloudflare 源码都在这里。</span></div>
+            <div class="pill"><strong>少争论</strong><span>以后不把试错直接堆主线。</span></div>
+          </div>
+        </div>
+        <div class="lane">
+          <div class="lane-label">feature/*</div>
+          <div class="lane-body">
+            <div class="pill"><strong>单一任务</strong><span>一个 bug 或一个功能。</span></div>
+            <div class="pill"><strong>随时可扔</strong><span>失败实验不污染 main。</span></div>
+            <div class="pill"><strong>小提交</strong><span>每个小点可回滚。</span></div>
+            <div class="pill"><strong>完成合并</strong><span>必要时 squash 成漂亮提交。</span></div>
+          </div>
+        </div>
+        <div class="lane">
+          <div class="lane-label">archive/*</div>
+          <div class="lane-body">
+            <div class="pill"><strong>旧历史</strong><span>乱历史保留但日常不看。</span></div>
+            <div class="pill"><strong>查账用</strong><span>需要找旧代码时再切。</span></div>
+            <div class="pill"><strong>不开发</strong><span>不要在 archive 上继续写功能。</span></div>
+            <div class="pill"><strong>保险绳</strong><span>重建历史后仍可找回。</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-title">
+          <h2>Codex 线程与记忆</h2>
+          <small>thread is workspace, docs are memory</small>
+        </div>
+        <table class="matrix">
+          <thead>
+            <tr>
+              <th>层级</th>
+              <th>放什么</th>
+              <th>不要放什么</th>
+              <th>你的项目用法</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>主线程</td>
+              <td>当前任务、最近决策、正在验证的东西。</td>
+              <td>永久知识和一大堆历史细节。</td>
+              <td>固定在 <code>C:\Data\1_Projects\飞行雪绒标签页</code>。</td>
+            </tr>
+            <tr>
+              <td>项目文档</td>
+              <td>架构说明、部署说明、踩坑、验收命令。</td>
+              <td>聊天流水账。</td>
+              <td><code>README.md</code>、<code>docs/*.md</code>、后续可加 <code>docs/WORKFLOW.md</code>。</td>
+            </tr>
+            <tr>
+              <td>Git</td>
+              <td>可回滚成果、归档点、发布点。</td>
+              <td>无意义临时脑回路。</td>
+              <td><code>main</code> 做新主线，<code>archive/*</code> 存旧历史。</td>
+            </tr>
+            <tr>
+              <td>自动化</td>
+              <td>周期性检查、长任务继续推进。</td>
+              <td>需要你判断审美或产品方向的决策。</td>
+              <td>适合构建检查、部署前巡检、反馈跟进。</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <div class="section-title">
+          <h2>高风险闸门</h2>
+          <small>read-only first, then plan, then execute</small>
+        </div>
+        <div class="grid cols-3">
+          <article class="card">
+            <span class="tag red">01</span>
+            <h3>只读诊断</h3>
+            <p>先看状态、配置、日志、diff。不能修改、不能删除、不能推送、不能部署。</p>
+          </article>
+          <article class="card">
+            <span class="tag red">02</span>
+            <h3>列计划和回滚</h3>
+            <p>明确将执行的命令、影响范围、失败后怎么还原。你确认后才进入执行。</p>
+          </article>
+          <article class="card">
+            <span class="tag red">03</span>
+            <h3>小步执行</h3>
+            <p>一次只做一个动作。每一步后检查状态，不把多个破坏性动作串成一条命令。</p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-title">
+          <h2>部署边界</h2>
+          <small>one repo, multiple build targets</small>
+        </div>
+        <div class="split">
+          <article class="card">
+            <h3>浏览器扩展版本</h3>
+            <ul class="checklist">
+              <li><span class="box violet"></span><span>入口：<code>entrypoints/newtab/</code>、<code>entrypoints/popup/</code></span></li>
+              <li><span class="box violet"></span><span>配置：<code>wxt.config.ts</code></span></li>
+              <li><span class="box violet"></span><span>共享：<code>shared/</code>、<code>public/</code>、<code>locales/</code></span></li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>Cloudflare 网页版</h3>
+            <ul class="checklist">
+              <li><span class="box amber"></span><span>入口：<code>web/cloudflare/</code></span></li>
+              <li><span class="box amber"></span><span>配置：<code>vite.cloudflare.config.ts</code>、<code>tsconfig.cloudflare.json</code></span></li>
+              <li><span class="box amber"></span><span>说明：<code>docs/cloudflare-pages.md</code>、<code>docs/cloudflare-sync-schema.sql</code></span></li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="callout">
+          <strong>最重要的一条</strong>
+          <p>
+            每次让 Codex 开工前，把任务写成：目标、范围、不要做、验收、提交。
+            这五个字段比“更聪明的模型”更能减少返工。
+          </p>
+        </div>
+      </section>
+
+      <footer>
+        <p>
+          Generated for the post-reset <code>main</code> workflow. Keep the old history in
+          <code>archive/pre-history-reset-2026-05-24</code>; do daily work from <code>main</code>.
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>

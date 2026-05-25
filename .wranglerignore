@@ -1,0 +1,41 @@
+# Exclude node_modules and package managers
+node_modules
+node_modules/**
+.pnpm-store
+pnpm-lock.yaml
+
+# Exclude version control
+.git
+.git/**
+.github
+.github/**
+
+# Exclude config files
+wrangler.toml
+wrangler.jsonc
+*.log
+
+# Exclude generated diagnostics
+artifacts
+artifacts/**
+build
+build/**
+
+# Exclude development directories
+.idea
+.idea/**
+.vscode
+.vscode/**
+scripts
+scripts/**
+
+# Exclude misc
+.DS_Store
+.env
+.env.local
+*.swp
+*.swo
+*~
+
+
+

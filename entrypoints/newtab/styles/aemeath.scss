@@ -1,0 +1,888 @@
+@use './mixins/acrylic.scss' as acrylic;
+
+html {
+  --aemeath-theme-tint: var(--el-color-primary);
+  --aemeath-theme-tint-soft: color-mix(in oklch, var(--aemeath-theme-tint), white 34%);
+  --aemeath-theme-tint-muted: color-mix(in oklch, var(--aemeath-theme-tint), white 58%);
+  --aemeath-glass: color-mix(in oklch, rgb(21 25 34 / 46%), var(--aemeath-theme-tint) 10%);
+  --aemeath-glass-hover: color-mix(in oklch, rgb(255 255 255 / 16%), var(--aemeath-theme-tint) 16%);
+  --aemeath-glass-strong: color-mix(in oklch, rgb(12 14 19 / 72%), var(--aemeath-theme-tint) 14%);
+  --aemeath-glass-input: color-mix(in oklch, rgb(0 0 0 / 20%), var(--aemeath-theme-tint) 8%);
+  --aemeath-glass-input-focus: color-mix(in oklch, rgb(0 0 0 / 27%), var(--aemeath-theme-tint) 10%);
+  --aemeath-border: color-mix(in oklch, rgb(255 255 255 / 20%), var(--aemeath-theme-tint) 14%);
+  --aemeath-border-soft: color-mix(in oklch, rgb(255 255 255 / 12%), var(--aemeath-theme-tint) 10%);
+  --aemeath-shadow: 0 18px 48px color-mix(in oklch, rgb(7 10 20 / 34%), var(--aemeath-theme-tint) 10%),
+    inset 0 1px 0 rgb(255 255 255 / 12%);
+  --aemeath-focus-ring: 0 0 0 3px rgb(255 255 255 / 16%),
+    0 0 0 5px color-mix(in oklch, var(--aemeath-theme-tint), white 22% / 58%);
+  --aemeath-control-strong: color-mix(in oklch, var(--aemeath-theme-tint-muted), white 18%);
+  --aemeath-text-strong: rgb(255 255 255 / 92%);
+  --aemeath-text-soft: rgb(255 255 255 / 72%);
+  --aemeath-text-muted: rgb(255 255 255 / 58%);
+  --aemeath-text-faint: rgb(255 255 255 / 40%);
+  --aemeath-stable-glass: rgb(21 25 34 / 42%);
+  --aemeath-stable-glass-hover: rgb(255 255 255 / 16%);
+  --aemeath-stable-glass-strong: rgb(12 14 19 / 72%);
+  --aemeath-stable-border: rgb(255 255 255 / 20%);
+  --aemeath-stable-border-soft: rgb(255 255 255 / 12%);
+  --aemeath-stable-shadow: 0 18px 48px rgb(7 10 20 / 34%),
+    inset 0 1px 0 rgb(255 255 255 / 12%);
+  --aemeath-stable-focus-ring: 0 0 0 3px rgb(255 255 255 / 16%),
+    0 0 0 5px rgb(255 157 202 / 58%);
+  --aemeath-stable-control-strong: rgb(255 221 239 / 96%);
+}
+
+html.colorful {
+  --aemeath-glass: color-mix(in oklch, rgb(21 25 34 / 42%), var(--aemeath-theme-tint) 22%);
+  --aemeath-glass-hover: color-mix(in oklch, rgb(255 255 255 / 15%), var(--aemeath-theme-tint) 28%);
+  --aemeath-glass-strong: color-mix(in oklch, rgb(12 14 19 / 72%), var(--aemeath-theme-tint) 24%);
+  --aemeath-border: color-mix(in oklch, rgb(255 255 255 / 19%), var(--aemeath-theme-tint) 24%);
+  --aemeath-border-soft: color-mix(in oklch, rgb(255 255 255 / 11%), var(--aemeath-theme-tint) 18%);
+  --aemeath-shadow: 0 18px 48px color-mix(in oklch, rgb(7 10 20 / 34%), var(--aemeath-theme-tint) 16%),
+    inset 0 1px 0 rgb(255 255 255 / 12%);
+}
+
+.app {
+  padding-bottom: 92px;
+}
+
+.clock {
+  margin-bottom: 8px;
+  font-family: STXingkai, '华文行楷', FZShuTi, KaiTi, 'Microsoft YaHei UI', cursive;
+  text-shadow:
+    0 0 2px rgb(255 255 255 / 95%),
+    0 0 18px rgb(255 190 235 / 72%),
+    0 14px 34px rgb(12 16 28 / 58%);
+}
+
+.clock__time-container {
+  color: rgb(255 222 244 / 94%);
+}
+
+.clock__new-container {
+  font-family: 'Microsoft YaHei UI', 'Segoe UI', sans-serif;
+  text-shadow:
+    0 0 8px rgb(255 169 222 / 50%),
+    0 2px 10px rgb(10 13 22 / 42%);
+}
+
+.clock__new-container span:first-child,
+.clock__minute.colorful {
+  color: #ffd166 !important;
+}
+
+.clock__date {
+  font-family: STXingkai, '华文行楷', KaiTi, 'Microsoft YaHei UI', serif;
+  font-size: clamp(17px, 2vw, 23px);
+  color: rgb(255 238 250 / 78%);
+}
+
+.search-box {
+  margin-top: 10px;
+}
+
+.search-box__form {
+  --height: 54px;
+  --width: clamp(370px, 34vw, 410px);
+
+  background-color: var(--aemeath-stable-glass) !important;
+  border: 1px solid var(--aemeath-stable-border-soft) !important;
+  border-bottom-color: transparent !important;
+  border-radius: var(--height) !important;
+  box-shadow:
+    0 0 18px rgb(4 7 14 / 14%),
+    inset 0 1px 0 rgb(255 255 255 / 10%);
+
+  @include acrylic.acrylic(22px, 1.18, 0.9);
+}
+
+.search-box__form:focus-within {
+  box-shadow:
+    0 0 26px rgb(2 4 10 / 30%),
+    inset 0 1px 0 rgb(255 255 255 / 8%);
+}
+
+.search-box__form:hover:not(.search-box__form--focus) {
+  --width: clamp(500px, 54vw, calc(630px / var(--search-size-scale)));
+
+  background-color: rgb(16 20 28 / 52%) !important;
+}
+
+.search-box__form--focus,
+.search-box__form--expand {
+  --width: clamp(580px, 61vw, calc(640px / var(--search-size-scale)));
+
+  background-color: var(--aemeath-stable-glass-strong) !important;
+  border-color: var(--aemeath-stable-border-soft) !important;
+  border-bottom-color: transparent !important;
+  box-shadow:
+    0 0 26px rgb(2 4 10 / 30%),
+    inset 0 1px 0 rgb(255 255 255 / 8%);
+
+  @include acrylic.acrylic(26px, 1.08, 0.76);
+}
+
+.search-box__form .search-engine-menu__icon,
+.search-box__form .search-box__btn {
+  color: var(--aemeath-stable-control-strong) !important;
+}
+
+.search-box__form--focus .search-engine-menu__icon:hover,
+.search-box__form--focus .search-box__btn:hover,
+.search-box__form--always-icon .search-engine-menu__icon:hover,
+.search-box__form--always-icon .search-box__btn:hover {
+  background: var(--aemeath-stable-glass-hover) !important;
+}
+
+.search-suggestion-area {
+  background-color: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+
+  @include acrylic.acrylic(24px, 1.12, 0.9);
+}
+
+.search-suggestion-area--open {
+  background-color: rgb(22 28 38 / 48%) !important;
+  border: 1px solid var(--aemeath-stable-border-soft) !important;
+  box-shadow:
+    0 18px 34px rgb(2 4 10 / 34%),
+    inset 0 1px 0 rgb(255 255 255 / 8%);
+}
+
+.search-suggestion-area--opacity {
+  background-color: transparent !important;
+}
+
+.search-suggestion-area--dark {
+  border-color: var(--aemeath-stable-border-soft) !important;
+}
+
+.search-suggestion-area--open.search-suggestion-area--opacity {
+  background-color: rgb(21 25 34 / 42%) !important;
+}
+
+.search-suggestion-area--open.search-suggestion-area--dark {
+  background-color: rgb(12 14 19 / 72%) !important;
+}
+
+.search-suggestion-area__item--active,
+.search-suggestion-area__clear-history:hover {
+  background-color: var(--aemeath-stable-glass-hover) !important;
+}
+
+.shortcut {
+  margin-top: 18px !important;
+}
+
+.shortcut__icon {
+  background: var(--aemeath-stable-glass) !important;
+  border: 1px solid var(--aemeath-stable-border) !important;
+  box-shadow: var(--aemeath-stable-shadow);
+
+  @include acrylic.acrylic(16px, 1.4, 1.08);
+}
+
+.shortcut__item:hover .shortcut__icon {
+  background: var(--aemeath-stable-glass-hover) !important;
+}
+
+.shortcut__item:focus-visible .shortcut__icon {
+  box-shadow: var(--aemeath-stable-shadow), var(--aemeath-stable-focus-ring);
+}
+
+.shortcut__pin-icon {
+  color: var(--aemeath-stable-control-strong) !important;
+  background-color: var(--aemeath-stable-glass-strong) !important;
+  box-shadow:
+    0 8px 20px rgb(2 4 10 / 32%),
+    inset 0 1px 0 rgb(255 255 255 / 10%) !important;
+
+  @include acrylic.acrylic(14px, 1.2, 0.96);
+}
+
+.dock {
+  height: calc(var(--item-size) + 12px) !important;
+  padding: 6px !important;
+  background-color: var(--aemeath-stable-glass) !important;
+  border: 1px solid var(--aemeath-stable-border) !important;
+  border-radius: 24px !important;
+  box-shadow: var(--aemeath-stable-shadow) !important;
+
+  @include acrylic.acrylic(22px, 1.45, 1.08);
+}
+
+.dock-item {
+  background-color: rgb(255 255 255 / 9%) !important;
+  border-radius: calc(var(--scale, 1) * var(--item-size) * 0.28) !important;
+}
+
+.dock-item:hover {
+  background-color: var(--aemeath-stable-glass-hover) !important;
+}
+
+.dock-item:focus-visible {
+  outline: 2px solid rgb(255 157 202 / 72%) !important;
+}
+
+.dock-tooltip.el-popper {
+  background: rgb(21 25 34 / 58%) !important;
+  border: 1px solid var(--aemeath-stable-border-soft) !important;
+  box-shadow: 0 12px 28px rgb(2 4 10 / 32%);
+
+  @include acrylic.acrylic(18px, 1.22, 1.01);
+}
+
+.yiyan {
+  color: rgb(255 238 250 / 78%);
+  text-shadow:
+    0 2px 10px rgb(8 12 24 / 72%),
+    0 0 18px color-mix(in oklch, var(--aemeath-theme-tint), white 32% / 20%);
+}
+
+.action-btn-container {
+  z-index: 6;
+}
+
+.aemeath-effects {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 0;
+  height: min(62vh, 620px);
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+  mask-image: linear-gradient(180deg, rgb(0 0 0 / 100%) 0%, rgb(0 0 0 / 94%) 66%, transparent 100%);
+}
+
+.aemeath-effects::before {
+  position: absolute;
+  inset: -10% -8% 0;
+  content: '';
+  mix-blend-mode: screen;
+}
+
+.aemeath-effects::before {
+  background:
+    radial-gradient(circle at 18% 18%, rgb(255 255 255 / 72%) 0 1px, transparent 2px),
+    radial-gradient(circle at 31% 24%, rgb(191 227 255 / 64%) 0 1px, transparent 2px),
+    radial-gradient(circle at 48% 13%, rgb(255 204 249 / 60%) 0 1px, transparent 2px),
+    radial-gradient(circle at 66% 22%, rgb(157 234 255 / 58%) 0 1px, transparent 2px),
+    radial-gradient(circle at 84% 16%, rgb(255 255 255 / 68%) 0 1px, transparent 2px),
+    radial-gradient(circle at 74% 46%, rgb(119 223 255 / 34%) 0 12%, transparent 30%),
+    radial-gradient(circle at 55% 40%, rgb(190 137 255 / 22%) 0 14%, transparent 34%);
+  background-size:
+    210px 150px,
+    260px 190px,
+    320px 220px,
+    280px 170px,
+    240px 210px,
+    100% 100%,
+    100% 100%;
+  opacity: 0.38;
+  filter: blur(calc(var(--aemeath-meteor-blur, 0px) * 0.55));
+  animation: aemeath-stardust 28s linear infinite;
+}
+
+.aemeath-click-heart {
+  position: fixed;
+  top: var(--click-y);
+  left: var(--click-x);
+  z-index: 10000;
+  width: var(--heart-size);
+  height: var(--heart-size);
+  pointer-events: none;
+  filter: drop-shadow(0 8px 14px rgb(83 174 255 / 28%));
+  transform: translate(-50%, -50%) scale(var(--heart-scale)) rotate(var(--heart-rotate));
+  animation: aemeath-click-heart var(--heart-duration) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: var(--heart-delay);
+}
+
+.aemeath-music-toggle,
+.aemeath-pet,
+.aemeath-music {
+  position: fixed;
+  z-index: 8;
+}
+
+.aemeath-music-toggle {
+  position: relative;
+  color: inherit;
+
+  svg {
+    width: 1em;
+    height: 1em;
+  }
+
+  &:hover,
+  &.is-playing {
+    color: var(--aemeath-control-strong);
+  }
+
+  &.is-playing::before {
+    position: absolute;
+    right: 7px;
+    bottom: 6px;
+    width: 5px;
+    height: 5px;
+    content: '';
+    background: var(--aemeath-theme-tint-soft);
+    border-radius: 50%;
+    box-shadow: 0 0 8px color-mix(in oklch, var(--aemeath-theme-tint), white 24% / 80%);
+  }
+}
+
+.aemeath-music {
+  top: 70px;
+  right: 30px;
+
+  --aemeath-music-panel-bg: var(--el-bg-color-page);
+  --aemeath-music-panel-bg-soft: var(--el-bg-color);
+  --aemeath-music-panel-border: var(--el-border-color-lighter);
+  --aemeath-music-panel-shadow: 0 0 15px 0 var(--le-bg-color-page-opacity-60);
+  --aemeath-music-primary: var(--el-color-primary);
+  --aemeath-music-primary-soft: var(--el-color-primary-light-8);
+  --aemeath-music-primary-softer: var(--el-color-primary-light-9);
+  --aemeath-music-text: var(--el-text-color-primary);
+  --aemeath-music-text-regular: var(--el-text-color-regular);
+  --aemeath-music-text-muted: color-mix(in oklch, var(--el-text-color-secondary), var(--el-text-color-primary) 24%);
+
+  display: flex;
+  visibility: hidden;
+  flex-direction: column;
+  width: min(330px, calc(100vw - 40px));
+  overflow: hidden;
+  color: var(--aemeath-music-text);
+  background-color: var(--aemeath-music-panel-bg);
+  border: 1px solid var(--aemeath-music-panel-border);
+  border-radius: 20px;
+  box-shadow: var(--aemeath-music-panel-shadow);
+  opacity: 0;
+  transform: translateY(-10px) scale(0.96);
+  transform-origin: right top;
+  transition:
+    background-color var(--el-transition-duration-fast) ease,
+    border-color var(--el-transition-duration-fast) ease,
+    color var(--el-transition-duration-fast) ease,
+    opacity 190ms ease,
+    visibility 190ms ease,
+    transform 190ms cubic-bezier(0.2, 0.72, 0.28, 1);
+
+  html.dialog-acrylic & {
+    @include acrylic.acrylic(24px, 1.42, 1.06);
+  }
+
+  html.colorful & {
+    --aemeath-music-panel-bg: var(--el-color-primary-light-9);
+    --aemeath-music-panel-bg-soft: var(--el-color-primary-light-8);
+    --aemeath-music-panel-border: color-mix(in oklch, var(--el-color-primary), transparent 62%);
+  }
+
+  html.dialog-transparent & {
+    --aemeath-music-panel-bg: var(--le-bg-color-overlay-opacity-20);
+    --aemeath-music-panel-bg-soft: var(--le-bg-color-overlay-opacity-30);
+    --aemeath-music-panel-border: color-mix(in oklch, var(--el-color-primary), transparent 72%);
+  }
+
+  html.colorful.dialog-transparent & {
+    --aemeath-music-panel-bg: color-mix(in oklch, var(--el-color-primary-light-9), transparent 18%);
+    --aemeath-music-panel-bg-soft: color-mix(in oklch, var(--el-color-primary-light-8), transparent 28%);
+  }
+}
+
+.aemeath-music.is-open {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.aemeath-music__hero {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 32px;
+  gap: 8px;
+  align-items: center;
+  padding: 18px 16px 8px 26px;
+}
+
+.aemeath-music__cover {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  overflow: hidden;
+  color: var(--aemeath-music-primary);
+  background:
+    radial-gradient(circle at 35% 28%, color-mix(in oklch, var(--aemeath-music-primary), transparent 68%), transparent 52%),
+    var(--aemeath-music-panel-bg-soft);
+  border: 2px solid var(--el-bg-color-overlay);
+  border-radius: 50%;
+  box-shadow:
+    0 10px 18px rgb(0 0 0 / 22%),
+    inset 0 1px 0 color-mix(in oklch, var(--el-bg-color-overlay), white 36%);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    background: rgb(255 255 255 / 5%);
+    border-radius: 50%;
+    clip-path: circle(50% at 50% 50%);
+    animation: aemeath-cover-spin 12s linear infinite paused;
+  }
+}
+
+.aemeath-music.is-playing .aemeath-music__cover img {
+  animation-play-state: running;
+}
+
+.aemeath-music__copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.aemeath-music__copy > strong,
+.aemeath-music__copy > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aemeath-music__copy strong {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+.aemeath-music__copy span {
+  font-size: 13px;
+  line-height: 1.25;
+  color: var(--aemeath-music-text-muted);
+}
+
+.aemeath-music__meta {
+  display: grid;
+  grid-template-columns: auto 24px 66px;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+  font-family: 'Microsoft YaHei UI', 'Segoe UI', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: color-mix(in oklch, var(--aemeath-music-text-muted), var(--aemeath-music-text) 18%);
+
+  > span {
+    min-width: 58px;
+    white-space: nowrap;
+  }
+}
+
+.aemeath-music__icon-btn,
+.aemeath-music__play {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: color-mix(in oklch, var(--aemeath-music-text-muted), var(--aemeath-music-text) 18%);
+  background: transparent;
+  border: 0;
+  border-radius: 12px;
+  transition:
+    color 150ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+
+  &:hover,
+  &.is-active {
+    color: var(--aemeath-music-primary);
+    background: transparent;
+    box-shadow: none;
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+
+  .el-icon {
+    width: 1em;
+    height: 1em;
+    font-size: 22px;
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.aemeath-music__play {
+  width: 48px;
+  height: 48px;
+  color: var(--aemeath-music-primary);
+  background: var(--aemeath-music-panel-bg-soft);
+  border-radius: 50%;
+  box-shadow: none;
+
+  &:hover {
+    color: var(--aemeath-music-primary);
+    background: var(--aemeath-music-panel-bg-soft);
+    filter: brightness(1.08);
+  }
+
+  svg {
+    width: 30px;
+    height: 30px;
+  }
+
+  .el-icon {
+    font-size: 30px;
+  }
+}
+
+.aemeath-music.is-playing .aemeath-music__play {
+  color: var(--el-color-white);
+  background: var(--aemeath-music-primary);
+}
+
+.aemeath-music__progress {
+  padding: 0 20px 10px 26px;
+}
+
+.aemeath-music__progress input,
+.aemeath-music__volume input {
+  display: block;
+  width: 100%;
+  height: 4px;
+  margin: 0;
+  appearance: none;
+  cursor: pointer;
+  background:
+    linear-gradient(90deg, var(--aemeath-music-primary) 0 var(--progress, 0%), color-mix(in oklch, var(--aemeath-music-text-muted), transparent 70%) var(--progress, 0%) 100%);
+  border-radius: 999px;
+
+  &::-webkit-slider-thumb {
+    width: 12px;
+    height: 12px;
+    appearance: none;
+    background: var(--aemeath-music-primary);
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--aemeath-music-primary), transparent 76%);
+    transform: scale(0);
+    transition: transform 140ms ease;
+  }
+
+  &:hover::-webkit-slider-thumb,
+  &:focus-visible::-webkit-slider-thumb {
+    transform: scale(1);
+  }
+}
+
+.aemeath-music__controls {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr) 62px repeat(2, 1fr);
+  gap: 4px;
+  align-items: center;
+  padding: 0 24px 14px;
+
+  .aemeath-music__icon-btn {
+    width: 100%;
+    color: color-mix(in oklch, var(--aemeath-music-text-muted), var(--aemeath-music-text) 20%);
+  }
+
+  .aemeath-music__icon-btn svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .aemeath-music__icon-btn .el-icon {
+    font-size: 28px;
+  }
+}
+
+.aemeath-music__drawer {
+  display: grid;
+  grid-template-rows: 0fr;
+  padding: 0 24px;
+  opacity: 0;
+  transition:
+    grid-template-rows 240ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 180ms ease;
+}
+
+.aemeath-music.is-drawer-open .aemeath-music__drawer {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.aemeath-music__drawer > * {
+  min-height: 0;
+}
+
+.aemeath-music__volume {
+  display: grid;
+  align-items: center;
+  min-width: 0;
+}
+
+.aemeath-music__volume input {
+  height: 3px;
+}
+
+.aemeath-music__playlist,
+.aemeath-music__lyrics {
+  display: grid;
+  gap: 4px;
+  max-height: 192px;
+  padding: 10px 0 12px;
+  overflow: hidden auto;
+  scrollbar-color: color-mix(in oklch, var(--aemeath-music-primary), transparent 48%) transparent;
+  scrollbar-width: thin;
+  border-top: 1px solid color-mix(in oklch, var(--aemeath-music-panel-border), transparent 42%);
+}
+
+.aemeath-music__track {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  padding: 7px;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+
+  &:hover,
+  &.is-active {
+    background: var(--aemeath-music-panel-bg-soft);
+  }
+
+  &.is-active {
+    color: var(--aemeath-music-primary);
+  }
+
+  img {
+    width: 38px;
+    height: 38px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  span {
+    display: grid;
+    min-width: 0;
+  }
+
+  strong,
+  small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    font-size: 12px;
+  }
+
+  small {
+    font-size: 10px;
+    color: var(--aemeath-music-text-muted);
+  }
+}
+
+.aemeath-music__lyrics {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  height: 192px;
+  min-height: 0;
+  max-height: none;
+  padding-top: 96px;
+  padding-bottom: 96px;
+  scroll-behavior: smooth;
+}
+
+.aemeath-music__lyric {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  padding: 4px 8px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--aemeath-music-text-muted);
+  text-align: center;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  transition:
+    color 180ms ease,
+    font-size 180ms ease,
+    background-color 180ms ease,
+    transform 180ms ease;
+
+  &:hover {
+    color: var(--aemeath-music-primary);
+  }
+
+  &.is-active {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--aemeath-music-primary);
+    background: transparent;
+  }
+}
+
+.aemeath-music__empty {
+  margin: 10px 0 4px;
+  font-size: 12px;
+  color: var(--aemeath-music-text-muted);
+  text-align: center;
+}
+
+.aemeath-pet {
+  top: 0;
+  left: 0;
+  width: 74px;
+  height: 74px;
+  padding: 0;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  outline: none;
+  background: transparent;
+  border: 0;
+  transition: filter 160ms ease;
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.aemeath-pet.is-dragging {
+  cursor: grabbing;
+  filter: drop-shadow(0 10px 22px rgb(255 190 235 / 30%));
+}
+
+.aemeath-pet.is-facing-left img {
+  transform: scaleX(-1);
+}
+
+.aemeath-pet img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+@keyframes aemeath-stardust {
+  0% {
+    background-position:
+      0 0,
+      0 0,
+      0 0,
+      0 0,
+      0 0,
+      50% 50%,
+      50% 50%;
+  }
+
+  100% {
+    background-position:
+      210px 150px,
+      -260px 190px,
+      320px -220px,
+      -280px -170px,
+      240px 210px,
+      50% 50%,
+      50% 50%;
+  }
+}
+
+@keyframes aemeath-cover-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes aemeath-click-heart {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3) rotate(var(--heart-rotate));
+  }
+
+  18% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--heart-dx)), calc(-50% + var(--heart-dy)))
+      scale(var(--heart-scale)) rotate(calc(var(--heart-rotate) + 18deg));
+  }
+}
+
+@media (width <= 600px) {
+  .clock {
+    transform: scale(0.92);
+  }
+
+  .search-box__form {
+    --height: 50px;
+    --width: 72vw;
+  }
+
+  .search-box__form:hover:not(.search-box__form--focus),
+  .search-box__form--focus {
+    --width: 88vw;
+  }
+
+  .aemeath-music {
+    top: 64px;
+    right: 12px;
+    width: calc(100vw - 24px);
+  }
+
+  .aemeath-music__hero {
+    grid-template-columns: 50px minmax(0, 1fr) 30px;
+    gap: 8px;
+    min-height: 74px;
+    padding: 14px 10px 5px;
+  }
+
+  .aemeath-music__cover {
+    width: 50px;
+    height: 50px;
+  }
+
+  .aemeath-music__meta {
+    grid-template-columns: auto 24px minmax(48px, 58px);
+    gap: 4px;
+  }
+
+  .aemeath-music__controls {
+    grid-template-columns: repeat(2, 1fr) 52px repeat(2, 1fr);
+    padding-inline: 10px;
+  }
+
+  .aemeath-music__hero > .aemeath-music__icon-btn:last-child {
+    display: none;
+  }
+
+  .aemeath-pet {
+    width: 58px;
+    height: 58px;
+  }
+}

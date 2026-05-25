@@ -1,0 +1,221 @@
+{
+  "about": {
+    "yiyanProvider": "一言API由 {api} 提供 "
+  },
+  "bookmark": {
+    "404": "什麼都沒找到",
+    "addToShortcut": "新增至捷徑",
+    "added": "已新增至捷徑",
+    "collapse": {
+      "all": "摺疊本層全部",
+      "other": "摺疊同層其他"
+    },
+    "delete": {
+      "confirm": "你確定要刪除「{{name}}」嗎？",
+      "confirmFolder": "「{{name}}」是一個資料夾，刪除它會將其中所有書籤一起刪除，確定嗎？",
+      "success": "已刪除「 {{title}}」"
+    },
+    "expandHint": "請展開側欄以查看書籤",
+    "moveError": "書籤移動失敗",
+    "sortBy": "排序方式",
+    "sortMode": {
+      "createdAsc": "由新到舊",
+      "createdDesc": "由舊到新",
+      "nameAsc": "名稱由A到Z",
+      "nameDesc": "名稱由Z到A",
+      "origin": "原始順序"
+    },
+    "title": "書籤",
+    "tooSmall": "側欄寬度過小"
+  },
+  "bootstrap": {
+    "invalidVer": {
+      "bak": "您也可以點擊下方按鈕下載舊版本的設定備份（無法匯入至目前版本）。",
+      "btn": "清除並重新整理",
+      "msg": "非常抱歉，偵測到不支援的舊版設定。為確保擴充功能正常運作，請清除擴充功能資料並重新整理。",
+      "title": "不支援的設定版本"
+    }
+  },
+  "changelog": {
+    "hideMajor": "不顯示大版本更新日誌",
+    "newVersionMsg": "你的起始頁更新啦~",
+    "otherVersions": {
+      "description": "僅包含5個版本的更新日誌，剩餘內容請點擊下方連結跳轉檢視：",
+      "linkEn": "English",
+      "linkZhCN": "中文（簡體）",
+      "title": "其他版本？"
+    },
+    "title": "更新日誌"
+  },
+  "common": {
+    "cancel": "取消",
+    "confirm": "好",
+    "delete": "刪除",
+    "edit": "編輯",
+    "enable": "啟用",
+    "icon": "圖示（可選）",
+    "name": "名稱",
+    "no": "算了",
+    "save": "儲存",
+    "undo": "復原",
+    "url": "網址",
+    "warning": "警告"
+  },
+  "customSearchEngine": {
+    "add": "新增自訂搜尋引擎",
+    "addDialog": {
+      "invalidUrlError": "URL 無效或不包含 %s 佔位符，請重新輸入~",
+      "nameRequiredError": "名稱不能為空~",
+      "urlHelp": "URL 必須包含 %s 作為搜尋關鍵字佔位符"
+    },
+    "deleteConfirm": "確定要刪除搜尋引擎「{{namee}}」嗎？",
+    "edit": "編輯自訂搜尋引擎",
+    "title": "自訂搜尋引擎",
+    "fetchingFavicon": "正在後台獲取圖示..."
+  },
+  "dailyBoard": {
+    "addTask": "新增任務",
+    "completeTask": "完成任務",
+    "deleteTask": "刪除任務",
+    "empty": "寫下今天最重要的一件事",
+    "focus": "今日焦點",
+    "focusPlaceholder": "今天想完成什麼？",
+    "note": "便箋",
+    "notePlaceholder": "臨時想法、連結或稍後處理的事...",
+    "pauseTimer": "暫停計時",
+    "reopenTask": "重新開啟任務",
+    "resetTimer": "重設計時",
+    "startTimer": "開始計時",
+    "timerBreak": "短休息",
+    "timerFocus": "專注",
+    "taskPlaceholder": "新增一個待辦"
+  },
+  "dock": {
+    "launchpad": {
+      "add": "添加",
+      "empty": "無結果",
+      "search": "搜尋...",
+      "title": "啟動台"
+    }
+  },
+  "menu": {
+    "about": "關於",
+    "backgroundPreference": "背景偏好設定",
+    "help": "幫助與回饋",
+    "searchEnginePreference": "搜尋引擎偏好",
+    "sponsor": "支持我們"
+  },
+  "notification": {
+    "bing": {
+      "message": "請查看開發人員工具的主控台訊息。",
+      "title": "無法取得 Bing 每日圖片"
+    },
+    "faviconCacheHint": {
+      "message": "可在「其他」設定中開啟圖示快取，以獲得更快的圖示載入速度",
+      "title": "提示：圖示快取未開啟"
+    },
+    "wallpaperCache": {
+      "message": "無法快取線上桌布：${error}",
+      "title": "快取線上桌布失敗"
+    },
+    "welcome": {
+      "message": "感謝安裝 Aemeath's Tab！你可以在右下角的設定中自訂你的新分頁。",
+      "title": "歡迎使用 Aemeath's Tab"
+    }
+  },
+  "quickCommand": {
+    "commands": {
+      "background": {
+        "description": "切換桌布、模糊與背景來源",
+        "title": "背景偏好"
+      },
+      "daily": {
+        "description": "記錄今日焦點、待辦與便箋",
+        "title": "今日面板"
+      },
+      "bookmark": {
+        "description": "開啟右側書籤側欄",
+        "title": "書籤側欄"
+      },
+      "engine": {
+        "description": "管理預設搜尋與自訂引擎",
+        "title": "搜尋引擎"
+      },
+      "search": {
+        "description": "回到搜尋框並立即輸入",
+        "title": "聚焦搜尋"
+      },
+      "settings": {
+        "description": "開啟完整設定中心",
+        "title": "設定中心"
+      },
+      "shortcut": {
+        "description": "建立新的快速存取入口",
+        "title": "新增捷徑"
+      }
+    },
+    "empty": "沒有相符的操作",
+    "hint": "快速指揮中心 (Ctrl/⌘ K)",
+    "placeholder": "搜尋操作...",
+    "subtitle": "輸入關鍵字，或按右側 Alt 快捷鍵直達。",
+    "subtitlePlain": "所有核心入口都在這裡，鍵盤也能抵達。",
+    "title": "快速指揮中心"
+  },
+  "search": {
+    "engineMenu": {
+      "current": "當前",
+      "tipPrefix": "Tip：按下",
+      "tipSuffix": "切換搜尋引擎"
+    },
+    "engines": {
+      "baidu": "百度",
+      "bing": "Bing",
+      "duckduckgo": "DuckDuckGo",
+      "google": "Google",
+      "yandex": "Yandex"
+    },
+    "placeholder": "搜尋",
+    "purgeSearchHistory": "清除搜尋歷史",
+    "searchEngineNotFound": "找不到搜尋引擎"
+  },
+  "shortcut": {
+    "addDialog": {
+      "extensionIconTip": "你也可以通過點擊瀏覽器擴充功能選單中的圖示來將目前查看頁面加入快速存取。",
+      "invalidUrlError": "無效的網址，請重新輸入~",
+      "tooLargeImageError": "圖片檔案大小超過 100KiB，請重新選擇~",
+      "uploadFaviconAlert": "若未上傳圖示，建議開啟「設定-其他-圖示快取」以自動取得圖示"
+    },
+    "addShortcut": "新增捷徑",
+    "bookmark": {
+      "add": "加入書籤",
+      "existing": "此書籤已存在",
+      "success": "已加入「{{folder}}」"
+    },
+    "editShortcut": "編輯捷徑",
+    "deleteMessage": "已刪除該捷徑",
+    "hide": "隱藏",
+    "hideTopMessage": {
+      "content": "已隱藏該最常訪問網站",
+      "restoreDefault": "還原預設",
+      "restoreSuccess": "已還原預設最常訪問網站"
+    },
+    "pin": "釘選",
+    "unpin": "取消釘選",
+    "unpinMessage": "已取消釘選該捷徑",
+    "fetchingFavicon": "正在後台獲取圖示..."
+  },
+  "sponsor": "這個擴充功能是我當初利用業餘時間為了滿足自己的需求而開始開發的。很高興它也對你有幫助！如果你真的想支持我，可以聯繫我的郵箱：redlnn@outlook.com。感謝你的關注與支持！",
+  "time": {
+    "afternoon": "下午",
+    "dawn": "凌晨",
+    "dusk": "傍晚",
+    "evening": "晚上",
+    "lateNight": "深夜",
+    "morning": "早上",
+    "noon": "中午"
+  },
+  "title": "新分頁",
+  "yiyan": {
+    "copied": "已複製到剪貼板"
+  }
+}

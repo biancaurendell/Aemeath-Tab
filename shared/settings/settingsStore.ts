@@ -1,0 +1,50 @@
+import { defineStore } from 'pinia'
+
+import type { CURRENT_CONFIG_SCHEMA } from '../settings'
+import { defaultSettings } from '../settings'
+
+import { settingsStorage } from './settingsStorage'
+
+function patchMissingSettings(settings: CURRENT_CONFIG_SCHEMA): CURRENT_CONFIG_SCHEMA {
+  settings.search.size =
+    typeof settings.search.size === 'number' ? settings.search.size : defaultSettings.search.size
+  settings.aemeath ??= structuredClone(defaultSettings.aemeath)
+  settings.aemeath.dailyBoard ??= structuredClone(defaultSettings.aemeath.dailyBoard)
+  settings.aemeath.dailyBoard.enabled =
+    typeof settings.aemeath.dailyBoard.enabled === 'boolean'
+      ? settings.aemeath.dailyBoard.enabled
+      : defaultSettings.aemeath.dailyBoard.enabled
+
+  return settings
+}
+
+export const useSettingsStore = defineStore('option', () => {
+  const state = reactive(structuredClone(defaultSettings as CURRENT_CONFIG_SCHEMA))
+
+  const init = async () => {
+    const settings = patchMissingSettings(await settingsStorage.getValue())
+    console.log('[Settings] Initializing settings storage with config version', settings.version)
+
+    // 清除过期的 blob url，避免使用失效的 URL
+    if (settings.background.local.url) settings.background.local.url = ''
+    if (settings.background.localDark.url) settings.background.localDark.url = ''
+    if (settings.background.bing.url) settings.background.bing.url = ''
+
+    Object.assign(state, settings)
+
+    // 监听其他标签页对设置的更改，实时同步到当前标签页的 store
+    settingsStorage.watch((newSettings) => {
+      if (!newSettings) return
+      Object.assign(state, patchMissingSettings(newSettings))
+    })
+  }
+
+  const save = async () => {
+    await settingsStorage.setValue(toRaw(state))
+  }
+
+  // 返回原始（非响应式）底层状态对象，对structuredClone安全
+  const getRawState = (): CURRENT_CONFIG_SCHEMA => toRaw(state) as CURRENT_CONFIG_SCHEMA
+
+  return { ...toRefs(state), init, save, getRawState }
+})

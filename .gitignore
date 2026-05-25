@@ -1,0 +1,11 @@
+node_modules/
+artifacts/
+dist-cloudflare/
+.output/
+.wxt/
+.claude/
+assets/wallpapers/
+.idea/
+types/auto-imports.d.ts
+types/components.d.ts
+pnpm-workspace.yaml

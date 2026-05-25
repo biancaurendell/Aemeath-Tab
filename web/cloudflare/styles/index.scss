@@ -1,0 +1,687 @@
+@use '@newtab/styles/mixins/acrylic.scss' as acrylic;
+@use '@newtab/styles/color.scss';
+@use '@newtab/styles/transitions.scss';
+@use '@newtab/styles/clock.scss';
+@use '@newtab/styles/search.scss';
+@use '@newtab/styles/action-btn.scss';
+@use '@newtab/styles/quick-command.scss';
+@use '@newtab/styles/daily-board.scss';
+@use '@newtab/styles/aemeath.scss';
+@use '@/assets/styles/font.scss';
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+  color-scheme: light dark;
+
+  --app-vh: 100vh;
+  --app-vw: 100vw;
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --app-vh: 100dvh;
+    --app-vw: 100dvw;
+  }
+}
+
+html,
+body,
+#app {
+  width: var(--app-vw);
+  height: var(--app-vh);
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  font-family: var(--el-font-family);
+  color: var(--el-text-color-primary);
+  background: #101626;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+a,
+input,
+textarea {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.noselect {
+  user-select: none;
+}
+
+.cloudflare-app {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+
+.background-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.background {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  scale: 1.04;
+}
+
+.background-mask {
+  position: absolute;
+  inset: 0;
+  background: rgb(8 12 24 / 34%);
+}
+
+.background__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(rgb(0 0 0 / 0%) 33%, rgb(0 0 0 / 88%) 166%);
+}
+
+.cloudflare-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(760px, calc(100vw - 28px));
+  padding-bottom: 72px;
+}
+
+.cloudflare-stage .clock {
+  margin-bottom: 16px;
+}
+
+.cloudflare-stage .clock__time-container {
+  font-size: clamp(54px, 9vw, 92px);
+  font-weight: 900;
+}
+
+.cloudflare-stage .clock__date {
+  max-width: min(640px, calc(100vw - 36px));
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cloudflare-stage .search-box__form {
+  color: var(--el-text-color-primary);
+}
+
+.cloudflare-engine,
+.cloudflare-stage .search-box__btn {
+  display: grid;
+  place-items: center;
+  width: calc((var(--height) - 10px) * var(--search-size-scale));
+  height: calc((var(--height) - 10px) * var(--search-size-scale));
+  padding: 0;
+  margin: calc(5px * var(--search-size-scale));
+  color: var(--aemeath-control-strong);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  transition:
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+.cloudflare-engine:hover,
+.cloudflare-engine:focus-visible,
+.cloudflare-stage .search-box__btn:hover,
+.cloudflare-stage .search-box__btn:focus-visible {
+  outline: none;
+  background: var(--aemeath-glass-hover);
+  transform: scale(1.04);
+}
+
+.cloudflare-engine img {
+  width: 21px;
+  height: 21px;
+  object-fit: contain;
+}
+
+.cloudflare-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(64px, 1fr));
+  gap: 12px;
+  width: min(680px, 100%);
+  margin-top: 24px;
+}
+
+.cloudflare-shortcut {
+  display: grid;
+  gap: 8px;
+  place-items: center;
+  min-width: 0;
+  padding: 12px 8px 10px;
+  color: rgb(255 238 250 / 88%);
+  text-decoration: none;
+  border-radius: 20px;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.cloudflare-shortcut:hover,
+.cloudflare-shortcut:focus-visible {
+  outline: none;
+  background: var(--aemeath-glass);
+  border-color: var(--aemeath-border);
+  box-shadow: var(--aemeath-shadow);
+  transform: translateY(-2px);
+
+  @include acrylic.acrylic(18px, 1.35, 1.04);
+}
+
+.cloudflare-shortcut span {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  font-size: 20px;
+  font-weight: 850;
+  color: rgb(28 28 36 / 78%);
+  background: var(--shortcut-tone);
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 17px;
+  box-shadow: 0 12px 24px rgb(4 7 14 / 22%);
+}
+
+.cloudflare-shortcut strong {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.cloudflare-app .daily-board {
+  top: 82px;
+}
+
+.cloudflare-app .action-btn-container {
+  background-color: var(--aemeath-glass);
+  border: 1px solid var(--aemeath-border);
+  box-shadow: var(--aemeath-shadow);
+  transition:
+    background-color var(--el-transition-duration-fast) ease,
+    border-color var(--el-transition-duration-fast) ease,
+    box-shadow var(--el-transition-duration-fast) ease;
+
+  &:hover,
+  &:focus-within {
+    background-color: var(--aemeath-glass-hover);
+    border-color: var(--aemeath-border);
+  }
+}
+
+.cloudflare-app .action-btn {
+  display: grid;
+  place-items: center;
+  color: var(--aemeath-text-soft);
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--aemeath-control-strong);
+  }
+
+  &:active {
+    transform: scale(0.94);
+  }
+}
+
+.account-btn {
+  color: var(--aemeath-control-strong) !important;
+
+  &:hover,
+  &:focus-visible {
+    .el-icon {
+      transform: scale(1.08);
+    }
+  }
+}
+
+.cloudflare-app .action-btn[href]:hover,
+.cloudflare-app .action-btn[href]:focus-visible {
+  .el-icon {
+    transform: rotate(45deg) scale(1.04);
+  }
+}
+
+.account-sync {
+  z-index: 42;
+}
+
+.account-sync__panel {
+  width: min(520px, 100%);
+}
+
+.account-sync__close {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  color: var(--aemeath-text-soft);
+  cursor: pointer;
+  background: color-mix(in oklch, var(--aemeath-glass-hover), transparent 18%);
+  border: 1px solid var(--aemeath-border-soft);
+  border-radius: 12px;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--aemeath-control-strong);
+    outline: none;
+    background: var(--aemeath-glass-hover);
+
+    .el-icon {
+      transform: rotate(90deg);
+    }
+  }
+
+  &:active {
+    transform: scale(0.94);
+  }
+
+  .el-icon,
+  svg {
+    pointer-events: none;
+  }
+
+  .el-icon {
+    transition: transform var(--el-transition-duration) ease-in-out;
+  }
+}
+
+.quick-command__esc {
+  min-width: 38px;
+  padding: 5px 8px;
+  font-family: var(--el-font-family);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--aemeath-text-muted);
+  text-align: center;
+  cursor: pointer;
+  background: color-mix(in oklch, var(--aemeath-glass-hover), transparent 18%);
+  border: 1px solid var(--aemeath-border-soft);
+  border-radius: 8px;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--aemeath-control-strong);
+    outline: none;
+    background: var(--aemeath-glass-hover);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.94);
+  }
+}
+
+.cloudflare-app .quick-command-leave-active {
+  pointer-events: none;
+}
+
+.account-sync__body {
+  display: grid;
+  gap: 12px;
+  padding: 0 18px 18px;
+  color: var(--aemeath-text-soft);
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+}
+
+.account-sync__form {
+  display: grid;
+  gap: 12px;
+
+  label {
+    display: grid;
+    gap: 7px;
+  }
+
+  span {
+    padding-inline: 2px;
+    font-size: 12px;
+    font-weight: 720;
+    color: var(--aemeath-text-muted);
+  }
+}
+
+.account-sync__form input,
+.account-sync__actions button {
+  min-width: 0;
+  font-family: var(--el-font-family);
+  border-radius: 14px;
+}
+
+.account-sync__form input {
+  width: 100%;
+  padding: 11px 12px;
+  color: var(--aemeath-text-strong);
+  outline: none;
+  background: var(--aemeath-glass-input);
+  border: 1px solid var(--aemeath-border-soft);
+
+  &::placeholder {
+    color: var(--aemeath-text-faint);
+  }
+
+  &:focus {
+    background: var(--aemeath-glass-input-focus);
+    border-color: color-mix(in oklch, var(--aemeath-theme-tint), white 22% / 44%);
+    box-shadow: var(--aemeath-focus-ring);
+  }
+}
+
+.account-sync__form button,
+.account-sync__actions button {
+  min-height: 38px;
+  padding: 9px 13px;
+  color: var(--aemeath-control-strong);
+  cursor: pointer;
+  background: var(--aemeath-glass-hover);
+  border: 1px solid var(--aemeath-border-soft);
+  transition:
+    background-color 150ms ease,
+    transform 150ms ease;
+
+  &:hover,
+  &:focus-visible {
+    outline: none;
+    background: var(--aemeath-glass-hover);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.98);
+  }
+}
+
+.account-sync__identity,
+.account-sync__conflict {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  background: color-mix(in oklch, var(--aemeath-glass-hover), transparent 34%);
+  border: 1px solid var(--aemeath-border-soft);
+  border-radius: 16px;
+}
+
+.account-sync__identity span,
+.account-sync__conflict strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  font-weight: 760;
+  color: var(--aemeath-text-strong);
+  white-space: nowrap;
+}
+
+.account-sync__identity strong {
+  font-size: 12px;
+  color: var(--aemeath-text-muted);
+}
+
+.account-sync__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.account-sync__message,
+.account-sync__error {
+  padding: 10px 12px;
+  margin: 0 18px 18px;
+  font-size: 12px;
+  line-height: 1.45;
+  border-radius: 14px;
+}
+
+.account-sync__message {
+  color: rgb(220 255 234 / 92%);
+  background: rgb(46 160 67 / 18%);
+  border: 1px solid rgb(122 255 165 / 18%);
+}
+
+.account-sync__error {
+  color: rgb(255 226 232 / 94%);
+  background: rgb(220 38 72 / 18%);
+  border: 1px solid rgb(255 143 165 / 20%);
+}
+
+.display-settings {
+  z-index: 43;
+}
+
+.display-settings__panel {
+  width: min(560px, 100%);
+}
+
+.display-settings__body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0 18px 18px;
+  color: var(--aemeath-text-soft);
+
+  > p {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--aemeath-text-muted);
+  }
+}
+
+.display-settings__preset {
+  min-height: 38px;
+  padding: 9px 13px;
+  color: var(--aemeath-control-strong);
+  cursor: pointer;
+  background: var(--aemeath-glass-hover);
+  border: 1px solid var(--aemeath-border-soft);
+  border-radius: 14px;
+  transition:
+    background-color 150ms ease,
+    transform 150ms ease;
+
+  &:hover,
+  &:focus-visible {
+    outline: none;
+    background: var(--aemeath-glass-hover);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.display-settings__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-column: 1 / -1;
+  gap: 8px;
+}
+
+.display-settings__grid label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 42px;
+  padding: 10px 12px;
+  background: color-mix(in oklch, var(--aemeath-glass-hover), transparent 34%);
+  border: 1px solid var(--aemeath-border-soft);
+  border-radius: 14px;
+}
+
+.display-settings__grid span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  font-weight: 720;
+  color: var(--aemeath-text-strong);
+  white-space: nowrap;
+}
+
+.display-settings__grid input {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 22px;
+  margin: 0;
+  appearance: none;
+  cursor: pointer;
+  background: color-mix(in oklch, var(--aemeath-glass-hover), transparent 24%);
+  border: 1px solid var(--aemeath-border-soft);
+  border-radius: 999px;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+
+  &::after {
+    display: block;
+    width: 16px;
+    height: 16px;
+    margin: 2px;
+    content: '';
+    background: rgb(255 255 255 / 78%);
+    border-radius: 50%;
+    transition: transform 150ms ease;
+  }
+
+  &:checked {
+    background: color-mix(in oklch, var(--el-color-primary), transparent 18%);
+    border-color: color-mix(in oklch, var(--el-color-primary), white 20%);
+
+    &::after {
+      transform: translateX(16px);
+    }
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--aemeath-focus-ring);
+  }
+}
+
+.display-settings__grid .display-settings__color input[type='color'] {
+  width: 34px;
+  height: 34px;
+  padding: 3px;
+  background: color-mix(in oklch, var(--aemeath-glass-hover), transparent 18%);
+  border-radius: 50%;
+
+  &::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  &::-webkit-color-swatch {
+    border: 1px solid rgb(255 255 255 / 48%);
+    border-radius: 50%;
+    box-shadow: 0 8px 18px color-mix(in oklch, var(--el-color-primary), transparent 72%);
+  }
+
+  &::-moz-color-swatch {
+    border: 1px solid rgb(255 255 255 / 48%);
+    border-radius: 50%;
+    box-shadow: 0 8px 18px color-mix(in oklch, var(--el-color-primary), transparent 72%);
+  }
+
+  &::after {
+    display: none;
+  }
+}
+
+@media (width <= 760px) {
+  .cloudflare-stage {
+    align-self: start;
+    padding-top: 18vh;
+  }
+
+  .cloudflare-shortcuts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    width: min(360px, 100%);
+  }
+
+  .cloudflare-shortcut {
+    padding-block: 8px;
+  }
+
+  .cloudflare-shortcut span {
+    width: 44px;
+    height: 44px;
+    border-radius: 15px;
+  }
+
+  .display-settings__body,
+  .display-settings__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (width <= 600px) {
+  .cloudflare-stage {
+    padding-top: 13vh;
+  }
+
+  .cloudflare-stage .clock__time-container {
+    font-size: clamp(44px, 16vw, 68px);
+  }
+
+  .cloudflare-stage .clock__date {
+    font-size: 16px;
+  }
+
+  .cloudflare-app .daily-board {
+    max-height: 36vh;
+  }
+
+  .cloudflare-app .action-btn-container {
+    top: 12px;
+    right: 12px;
+  }
+}

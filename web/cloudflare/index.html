@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark light" />
+    <meta
+      name="description"
+      content="Aemeath's Tab static web build for Cloudflare Pages."
+    />
+    <link rel="icon" href="/favicon.png" />
+    <script>
+      ;(function () {
+        const ls = localStorage.getItem('vueuse-color-scheme')
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        const isDark = ls === 'dark' || (ls !== 'light' && systemDark)
+        const h = document.documentElement
+        h.classList.add(isDark ? 'dark' : 'light')
+        h.style.colorScheme = isDark ? 'dark' : 'light'
+        h.style.backgroundColor = isDark ? '#0a0a0a' : '#f2f3f5'
+      })()
+    </script>
+    <title>Aemeath's Tab</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
+
